@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProject = exports.createProject = exports.getProjects = void 0;
+exports.getProjectById = exports.deleteProject = exports.createProject = exports.getProjects = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -18,7 +18,7 @@ const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.json(projects);
     }
     catch (error) {
-        res.status(500).json({ message: "error retrieving projects" });
+        res.status(500).json({ message: "error retrieving projects", error: error.message });
     }
 });
 exports.getProjects = getProjects;
@@ -29,7 +29,7 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.json(newProject);
     }
     catch (error) {
-        res.status(500).json({ message: "error creating project", error: error });
+        res.status(500).json({ message: "error creating project", error: error.message });
     }
 });
 exports.createProject = createProject;
@@ -42,7 +42,18 @@ const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.json({ message: "project deleted" });
     }
     catch (error) {
-        res.status(500).json({ message: "error deleting project", error: error });
+        res.status(500).json({ message: "error deleting project", error: error.message });
     }
 });
 exports.deleteProject = deleteProject;
+const getProjectById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { projectId } = req.params;
+    try {
+        const project = yield prisma.project.findUnique({ where: { id: Number(projectId) } });
+        res.json(project);
+    }
+    catch (error) {
+        res.status(500).json({ message: "error retrieving project", error: error.message });
+    }
+});
+exports.getProjectById = getProjectById;

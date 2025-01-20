@@ -4,7 +4,7 @@ import { getTasks, createTask, updateTaskStatus } from "../controllers/taskContr
 const router = Router();
 
 router.get("/:projectId", getTasks);
-router.post("/", createTask);
+router.post("/:projectId", createTask);
 router.patch("/:taskId/status", updateTaskStatus);
 
 export default router;

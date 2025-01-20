@@ -25,6 +25,14 @@ export const api = createApi({
       }),
       invalidatesTags:["Projects"]
     }),
+    // Get a project by id
+    getProjectById:build.query<Project,{projectId:string}>({
+      query:({projectId})=>({
+        url:`/api/projects/${projectId}`,
+        method:"GET"
+      }),
+      providesTags:["Projects"]
+    }),
     // Get tasks for a project
     getTasks:build.query<Task[],{projectId:string}>({
       query:({projectId})=>({
@@ -59,4 +67,4 @@ export const api = createApi({
   }),
 });
 
-export const { useGetProjectsQuery, useCreateProjectMutation, useGetTasksQuery, useCreateTaskMutation, useUpdateTaskStatusMutation } = api;
+export const { useGetProjectsQuery, useCreateProjectMutation, useGetTasksQuery, useCreateTaskMutation, useUpdateTaskStatusMutation, useGetProjectByIdQuery } = api;

@@ -27,33 +27,53 @@ export const createTask = async (req: Request, res: Response) => {
       dueDate,
       points,
       projectId,
-      authorUserId,
-      assignedUserId,
+      dependencies, // List of prerequisite task IDs
     } = req.body;
 
     // Validate required fields
-    if (!title || !projectId || !authorUserId) {
-      return res.status(400).json({ error: "Title, projectId, and authorUserId are required." });
+    if (
+      !title ||
+      !description ||
+      !status ||
+      !priority ||
+      !tags ||
+      !startDate ||
+      !dueDate ||
+      !points ||
+      !projectId 
+    ) {
+      return res.status(400).json({ error: "All fields are required." });
     }
 
-    // Create the task
-    const task = await prisma.task.create({
+    //  Create the new task
+    const newTask = await prisma.task.create({
       data: {
         title,
         description,
         status,
         priority,
         tags,
-        startDate: startDate ? new Date(startDate) : undefined,
-        dueDate: dueDate ? new Date(dueDate) : undefined,
-        points,
-        projectId,
-        authorUserId,
-        assignedUserId,
+        startDate: new Date(startDate),
+        dueDate: new Date(dueDate),
+        points: parseInt(points),
+        projectId: parseInt(projectId),
+        authorUserId: 1,
       },
     });
 
-    res.status(201).json({ message: "Task created successfully", task });
+    // creating dependencies in the TaskDependency table
+    if (dependencies && dependencies.length > 0) {
+      const taskDependencies = dependencies.map((prerequisiteTaskId: number) => ({
+        dependentTaskId: newTask.id, 
+        prerequisiteTaskId,
+      }));
+
+      await prisma.taskDependency.createMany({
+        data: taskDependencies,
+      });
+    }
+
+    res.status(201).json( newTask );
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).json({ error: "An error occurred while creating the task." });
@@ -70,3 +90,4 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
         res.status(500).json({ message: "error updating task status" });
     }
 };
+

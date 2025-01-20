@@ -74,18 +74,18 @@ export interface User {
     project: Project;
     author: User;
     assignee?: User ;
-    taskAssignments?: TaskAssignment[];
-    attachments?: Attachment[];
-    comments?: Comment[];
-    dependencies?: TaskDependency[];
-    dependents?: TaskDependency[];
+    taskAssignments?: Number[];
+    attachments?: Number[];
+    comments?: Number[];
+    dependencies?: Number[];
+    dependents?: Number[];
   }
   
   export interface TaskDependency {
-    id: number;
-    dependentTaskId: number;
-    prerequisiteTaskId: number;
-    createdAt: Date;
+    dependentTaskId: number; // task needs to be completed before this task
+    prerequisiteTaskId: number; 
+    createdAt?: Date;
+    updatedAt?: Date;
   
     dependentTask: Task;
     prerequisiteTask: Task;
@@ -133,9 +133,9 @@ export interface User {
   }
 
   export enum Priority {
-    LOW = 'Low',
-    MEDIUM = 'Medium',
-    HIGH = 'High',
+    LOW = 'low',
+    MEDIUM = 'medium',
+    HIGH = 'high',
   }
 
   export enum TaskStatus {

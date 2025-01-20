@@ -26,7 +26,7 @@ const ProjectModal = (props: Props) => {
         return projectName && projectDescription && startDate && endDate && status;
     }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectName || !projectDescription || !startDate || !endDate || !status) return;
 
@@ -45,7 +45,7 @@ const ProjectModal = (props: Props) => {
       status: status
     }
 
-    createProject(newProject);
+    await createProject(newProject);
     
   }
 

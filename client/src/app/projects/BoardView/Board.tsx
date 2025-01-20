@@ -24,7 +24,6 @@ export default function Board({ id, setIsNewTaskModalOpen }: Props) {
 
   const moveTask = (taskId: string, status: TaskStatus) => {
     updateTaskStatus({ taskId, status });
-    console.log(taskId, status,"task moved");
   };
 
   if (isLoading) return <CircularProgress />;
@@ -119,7 +118,7 @@ const TaskColumn = ({
       </div>
       {/* Task cards */}
       <div className={`flex flex-col gap-4 p-4 min-h-[200px] ${
-        isOver ? "border-2 border-dashed border-gray-400" : ""
+        isOver ? "opacity-50" : ""
       }`}>
         {tasks.filter((task) => task.status?.toLowerCase().replace(" ", "").replace("_", "") ===
       status.toLowerCase().replace(" ", "").replace("_", "")).map((task) => (
@@ -148,7 +147,12 @@ const TaskCard = ({
       isDragging: !!monitor.isDragging(),
     }),
   }));
-  const taskpriorityColor = task.priority === Priority.LOW ? "bg-green-400 bg-opacity-20 text-green-400" : task.priority === Priority.MEDIUM ? "bg-orange-400 bg-opacity-20 text-orange-400" : "bg-red-500 bg-opacity-20 text-red-500";
+  const priorityColorMap = {
+    low: "bg-green-400 bg-opacity-20 text-green-400",
+    medium: "bg-orange-400 bg-opacity-20 text-orange-400", 
+    high: "bg-red-500 bg-opacity-20 text-red-500"
+  };
+
   const taskTagsSplit = task.tags ? task.tags.split(",") : [];
 
   const formattedStartDate = task.startDate
@@ -164,13 +168,13 @@ const TaskCard = ({
       }}
       className={`flex flex-col gap-y-2 bg-white shadow rounded-md mb-4 p-4 cursor-move transition-all duration-200 ${
         isDragging
-          ? "opacity-50 scale-105 shadow-lg rotate-3"
-          : "opacity-100 scale-100"
+          ? " scale-105 shadow-lg rotate-3"
+          : "scale-100"
       }`}
     >
       <div className="flex justify-between items-center">
         {/* priority  */}
-        <div className={` h-5 px-1 py-0.5 rounded text-xs font-normal ${taskpriorityColor}`}>{task.priority?.toLocaleLowerCase()}</div>
+        <div className={` h-5 px-1 py-0.5 rounded text-xs font-normal ${priorityColorMap[task.priority?.toLowerCase() as keyof typeof priorityColorMap]}`}>{task.priority?.toLocaleLowerCase()}</div>
         <button className="cursor-pointer ">
             <Ellipsis size={20} className="text-gray-500 hover:text-gray-900"/>
 
@@ -187,11 +191,23 @@ const TaskCard = ({
     </div>
     <div className="flex justify-between items-center">
         <div>
-            <AvatarGroup total={3} max={3}  spacing={20}>
-                <Avatar src={task.assignee?.profilePictureUrl} alt={task.assignee?.username} sx={{width: "15", height: "15"}}/>
-                <Avatar src={task.assignee?.profilePictureUrl} alt={task.assignee?.username} sx={{width: "15", height: "15"}}/>
-                <Avatar src={task.assignee?.profilePictureUrl} alt={task.assignee?.username} sx={{width: "15", height: "15"}}/>
-            </AvatarGroup>
+        <AvatarGroup total={3} max={3} spacing={10}>
+  <Avatar 
+    src={task.assignee?.profilePictureUrl} 
+    alt={task.assignee?.username} 
+    sx={{ width: 25, height: 25 }} 
+  />
+  <Avatar 
+    src={task.assignee?.profilePictureUrl} 
+    alt={task.assignee?.username} 
+    sx={{ width: 25, height: 25 }} 
+  />
+  <Avatar 
+    src={task.assignee?.profilePictureUrl} 
+    alt={task.assignee?.username} 
+    sx={{ width: 25, height: 25 }} 
+  />
+</AvatarGroup>
         </div>
         <div className="flex justify-between items-center gap-x-2">
             <div className="flex justify-start items-center gap-x-1">

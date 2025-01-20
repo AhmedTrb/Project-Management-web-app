@@ -1,5 +1,5 @@
 'use client'
-import { Plus } from 'lucide-react';
+import { List, Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
@@ -7,6 +7,7 @@ import Board from '../BoardView/Board';
 import NewTaskModal from '@/components/TaskModal';
 import { useParams } from 'next/navigation';
 import Graph from '../GraphView/Graph';
+import ListView from '../ListView/List';
 
 
 type Props = {
@@ -17,7 +18,7 @@ const ProjectPage = ({}: Props) => {
   const { id } = useParams<{ id: string }>();
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isActiveTab, setIsActiveTab] = useState("BOARD");
-
+  
 
   return (
     <div className='flex flex-col justify-start w-full gap-y-6 p-10'>
@@ -65,11 +66,15 @@ const ProjectPage = ({}: Props) => {
           <Board id={id} setIsNewTaskModalOpen={setIsNewTaskModalOpen} />
         )}
         {isActiveTab === "GRAPH" && (
-          <Graph />
+          <Graph id={id} />
         )}
+        {isActiveTab === "LIST" && (
+          <ListView id={id} />
+        )}  
       </div>
     </div>
   )
 }
 
 export default ProjectPage
+
