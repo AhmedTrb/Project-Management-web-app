@@ -28,7 +28,7 @@ const ProjectPage = ({}: Props) => {
       <NewTaskModal projectId={id} isOpen={isNewTaskModalOpen} onClose={()=>setIsNewTaskModalOpen(false)}/>
       {/* Header */}
       <div className='flex justify-between items-start sm:flex-col   md:flex-row border-b border-gray-200 pb-4'>
-        <div className='flex flex-col gap-y-4 w-1/2 '>
+        <div>
           <h1 className='text-3xl font-semibold text-secondary-950'>{project?.name}</h1>
         </div>
         <div className='flex justify-end items-center gap-x-4 w-1/2 sm:w-full   '>

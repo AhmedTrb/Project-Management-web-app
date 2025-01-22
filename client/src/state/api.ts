@@ -80,6 +80,7 @@ export const api = createApi({
       }),
       invalidatesTags:["Tasks"]
     }),
+    // Get project tasks dependencies
     getProjectDependencies:build.query<TaskDependency[],{projectId:string}>({
       query:({projectId})=>({
         url:`/api/projects/${projectId}/tasks/dependencies`,

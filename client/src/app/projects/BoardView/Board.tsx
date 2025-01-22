@@ -190,7 +190,7 @@ const TaskCard = ({
         </div>
     </div>
     {/* Task attachments */}
-    <img src="/attachment.jpg" alt="attachment"  className="rounded-md w-full object-contain"/>
+    {/* <img src="/attachment.jpg" alt="attachment"  className="rounded-md w-full object-contain"/> */}
     {/* task title and tags*/}
     <div className="flex flex-col gap-y-1">
         {/* task title */}

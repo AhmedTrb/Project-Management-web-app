@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Modal from "../Modal";
-import { projectStatus, Task, TaskDependency } from "@/app/types/types";
+import { Priority, projectStatus, Task, TaskDependency, TaskStatus } from "@/app/types/types";
 import { useCreateTaskMutation, useGetTasksQuery, useGetProjectByIdQuery } from "@/state/api";
 import { formatISO } from "date-fns";
 import Select from 'react-select';
@@ -16,8 +16,8 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
   // state variables
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("TODO");
-  const [priority, setPriority] = useState("MEDIUM");
+  const [status, setStatus] = useState<TaskStatus>(TaskStatus.TODO);
+  const [priority, setPriority] = useState<Priority>(Priority.MEDIUM);
   const [tags, setTags] = useState("");
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -69,7 +69,7 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
       const newTask: Partial<Task> = {
         title,
         description,
-        status: status as projectStatus,
+        status: status as TaskStatus,
         priority,
         tags,
         startDate: formattedStartDate,
@@ -88,15 +88,17 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
       // clear the form
       setTitle("");
       setDescription("");
-      setStatus("TODO");
-      setPriority("MEDIUM");
+      setStatus(TaskStatus.TODO);
+      setPriority(Priority.MEDIUM);
       setTags("");
       setStartDate("");
       setDueDate("");
       setPoints("");
       setDependencies([]);
       setSuccess(true);
-      
+      setTimeout(() => {
+        setSuccess(false);
+      }, 2000);
     } catch (error: any) {
       console.error("Error creating task:", error.message);
       setSuccess(false);
@@ -128,20 +130,21 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
             <select
               className={inputClasses}
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => setStatus(e.target.value as TaskStatus)}
             >
-              <option value="TODO">Todo</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="DONE">Done</option>
+              <option value={TaskStatus.TODO}>{TaskStatus.TODO}</option>
+              <option value={TaskStatus.IN_PROGRESS}>{TaskStatus.IN_PROGRESS}</option>
+              <option value={TaskStatus.COMPLETED}>{TaskStatus.COMPLETED}</option>
+              <option value={TaskStatus.UNDER_REVIEW}>{TaskStatus.UNDER_REVIEW}</option>
             </select>
             <select
               className={inputClasses}
               value={priority}
-              onChange={(e) => setPriority(e.target.value)}
+              onChange={(e) => setPriority(e.target.value as Priority)}
             >
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
+              <option value={Priority.LOW}>{Priority.LOW}</option>
+              <option value={Priority.MEDIUM}>{Priority.MEDIUM}</option>
+              <option value={Priority.HIGH}>{Priority.HIGH}</option>
             </select>
           </div>
           <input
@@ -152,20 +155,26 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
             onChange={(e) => setTags(e.target.value)}
           />
           <div className="flex justify-between gap-x-2 w-full">
+            <div className="flex flex-col gap-y-2">
+            <label htmlFor="startDate">Start Date</label>
             <input
               type="date"
               placeholder="Start Date"
               className={inputClasses}
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <input
-              type="date"
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="dueDate">Due Date</label>
+              <input
+                type="date"
               placeholder="Due Date"
               className={inputClasses}
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
+            </div>
           </div>
           <input
             type="number"
