@@ -1,4 +1,4 @@
-import { Project, Task } from "@/app/types/types";
+import { Project, Task, TaskDependency } from "@/app/types/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import dotenv from "dotenv";
 
@@ -33,6 +33,14 @@ export const api = createApi({
       }),
       providesTags:["Projects"]
     }),
+    // Delete a project
+    deleteProject:build.mutation<Project,{projectId:string}>({
+      query:({projectId})=>({
+        url:`/api/projects/${projectId}`,
+        method:"DELETE"
+      }),
+      invalidatesTags:["Projects"]
+    }),
     // Get tasks for a project
     getTasks:build.query<Task[],{projectId:string}>({
       query:({projectId})=>({
@@ -51,7 +59,7 @@ export const api = createApi({
         method:"POST",
         body:task
       }),
-      invalidatesTags:["Tasks"]
+      invalidatesTags:[{type:"Tasks"}]
     }),
     // Update task status for a project
     updateTaskStatus:build.mutation<Task,{taskId:string,status:string}>({
@@ -64,7 +72,22 @@ export const api = createApi({
         { type: "Tasks", id: taskId },
       ],
     }),
+    // Delete a task
+    deleteTask:build.mutation<Task,{taskId:string}>({
+      query:({taskId})=>({
+        url:`/api/tasks/${taskId}`,
+        method:"DELETE"
+      }),
+      invalidatesTags:["Tasks"]
+    }),
+    getProjectDependencies:build.query<TaskDependency[],{projectId:string}>({
+      query:({projectId})=>({
+        url:`/api/projects/${projectId}/tasks/dependencies`,
+        method:"GET"
+      }),
+      providesTags:["Tasks"]
+    }),
   }),
 });
 
-export const { useGetProjectsQuery, useCreateProjectMutation, useGetTasksQuery, useCreateTaskMutation, useUpdateTaskStatusMutation, useGetProjectByIdQuery } = api;
+export const { useGetProjectsQuery, useCreateProjectMutation, useGetTasksQuery, useCreateTaskMutation, useUpdateTaskStatusMutation, useGetProjectByIdQuery, useDeleteTaskMutation, useDeleteProjectMutation ,useGetProjectDependenciesQuery} = api;

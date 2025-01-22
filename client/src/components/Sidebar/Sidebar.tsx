@@ -5,7 +5,7 @@ import { assets } from '@/app/assets/assets';
 import { ChevronLeft, ChevronsLeft, Ellipsis, LayoutDashboard, ListChecks, LucideIcon, MessageSquare, Plus, Settings, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useGetProjectsQuery } from '@/state/api';
+import { useDeleteProjectMutation, useGetProjectsQuery } from '@/state/api';
 import { useAppDispatch } from '@/app/redux';
 import { toggleModal } from '@/state';
 type Props = {}
@@ -13,7 +13,7 @@ type Props = {}
 const Sidebar = (props: Props) => {
     const { data: projects, isLoading, error } = useGetProjectsQuery();
     const dispatch = useAppDispatch();
-
+    
   return (
     <div className='w-60 fixed h-full bg-white  flex flex-col gap-y-4 justify-start items-center overflow-x-auto border-r border-[#DBDBDB] '>
         {/* TOP LOGO */}
@@ -44,7 +44,7 @@ const Sidebar = (props: Props) => {
         {/* PROJECTS LIST items*/}
         <div className='w-full flex flex-col gap-y-2 px-4'>
             {projects?.map((project) => (
-                <ProjectItem key={project.id} title={project.name} href={`/projects/${project.id}`} color='bg-green-400'/>
+                <ProjectItem key={project.id} title={project.name} href={`/projects/${project.id}`} projectId={project.id.toString()} color='bg-green-400'/>
             ))}
         </div>
     </div>
@@ -55,6 +55,7 @@ interface SidebarItemProps {
     title: string;
     href: string;
     Icon: LucideIcon;
+    
 };
 
 const SidebarItem = ({title, Icon,href}: SidebarItemProps) => {
@@ -73,22 +74,25 @@ interface ProjectItemProps {
     title: string;
     href: string;
     color: string;
+    projectId: string;
 }
-const ProjectItem = ({title, href, color}: ProjectItemProps) => {
+const ProjectItem = ({title, href, color, projectId}: ProjectItemProps) => {
     const pathname = usePathname();
     const isActive = (pathname === href );
     const [isProjectOptionsOpen, setIsProjectOptionsOpen] = useState(false);
+    const [deleteProject] = useDeleteProjectMutation();
+
     return (
         <Link href={href}>
             <div className={`relative flex  items-center justify-between w-full hover:bg-[#5130e514] hover:text-gray-950 rounded-md p-2 cursor-pointer ${isActive ? 'bg-[#5130e514] text-gray-950' : ''}`}>
-                <div className='flex items-center gap-x-4'>
+                <div className='flex items-center gap-x-4 w-full'>
                     <div className={`block w-2 h-2 rounded-full ${color}`}></div>
-                    <p className={`text-md font-medium text-gray-500 truncate ${isActive ? 'text-primary-600' : ''} `}>{title}</p>
+                    <p className={`text-sm font-medium text-gray-500 truncate line-clamp-1 flex-1 w-40 ${isActive ? 'text-primary-600' : ''}`}>{title}</p>
+                    <Ellipsis size={20} className={`text-gray-500  ${isActive ? 'text-primary-600' : ''}`} onClick={() => setIsProjectOptionsOpen(!isProjectOptionsOpen)}/>
                 </div>
-                <Ellipsis size={20} className={`text-gray-500  ${isActive ? 'text-primary-600' : ''}`} onClick={() => setIsProjectOptionsOpen(!isProjectOptionsOpen)}/>
                 {isProjectOptionsOpen && isActive &&(
                     <div className=' z-50 absolute  top-7 right-0 w-2/3 px-3  py-2 bg-white rounded-md shadow-md flex flex-col gap-y-2'>
-                        <p className='text-sm font-medium text-gray-500'>Delete</p>
+                        <p className='text-sm font-medium text-gray-500' onClick={() => deleteProject({projectId})} >Delete</p>
                         <p className='text-sm font-medium text-gray-500'>Open</p>
                     </div>
                 )}

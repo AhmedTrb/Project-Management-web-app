@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProjectById = exports.deleteProject = exports.createProject = exports.getProjects = void 0;
+exports.getProjectDependencies = exports.getProjectById = exports.deleteProject = exports.createProject = exports.getProjects = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -34,12 +34,10 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.createProject = createProject;
 const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
+    const { projectId } = req.params;
     try {
-        yield prisma.project.delete({ where: { id: Number(id) } });
-        yield prisma.task.deleteMany({ where: { projectId: Number(id) } });
-        yield prisma.projectTeam.deleteMany({ where: { projectId: Number(id) } });
-        res.json({ message: "project deleted" });
+        yield prisma.project.delete({ where: { id: Number(projectId) } });
+        res.json({ message: "project deleted successfully" });
     }
     catch (error) {
         res.status(500).json({ message: "error deleting project", error: error.message });
@@ -57,3 +55,16 @@ const getProjectById = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getProjectById = getProjectById;
+const getProjectDependencies = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { projectId } = req.params;
+        const tasks = yield prisma.task.findMany({ where: { projectId: Number(projectId) } });
+        const taskIds = tasks.map(task => task.id);
+        const dependencies = yield prisma.taskDependency.findMany({ where: { dependentTaskId: { in: taskIds }, prerequisiteTaskId: { in: taskIds } } });
+        res.json(dependencies);
+    }
+    catch (error) {
+        res.status(500).json({ message: "error retrieving project dependencies", error: error.message });
+    }
+});
+exports.getProjectDependencies = getProjectDependencies;

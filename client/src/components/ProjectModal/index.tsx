@@ -46,7 +46,11 @@ const ProjectModal = (props: Props) => {
     }
 
     await createProject(newProject);
-    
+    setProjectName('');
+    setProjectDescription('');
+    setStartDate('');
+    setEndDate('');
+    setStatus(projectStatus.PLANNING);
   }
 
   const inputClasses = 'w-full rounded border border-gray-300 p-2 shadow-sm';

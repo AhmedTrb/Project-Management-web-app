@@ -8,6 +8,7 @@ import NewTaskModal from '@/components/TaskModal';
 import { useParams } from 'next/navigation';
 import Graph from '../GraphView/Graph';
 import ListView from '../ListView/List';
+import { useGetProjectByIdQuery } from '@/state/api';
 
 
 type Props = {
@@ -18,7 +19,7 @@ const ProjectPage = ({}: Props) => {
   const { id } = useParams<{ id: string }>();
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isActiveTab, setIsActiveTab] = useState("BOARD");
-  
+  const { data: project, isLoading, error } = useGetProjectByIdQuery({projectId: id});
 
   return (
     <div className='flex flex-col justify-start w-full gap-y-6 p-10'>
@@ -28,7 +29,7 @@ const ProjectPage = ({}: Props) => {
       {/* Header */}
       <div className='flex justify-between items-start sm:flex-col   md:flex-row border-b border-gray-200 pb-4'>
         <div className='flex flex-col gap-y-4 w-1/2 '>
-          <h1 className='text-3xl font-semibold text-secondary-950'>Project Name</h1>
+          <h1 className='text-3xl font-semibold text-secondary-950'>{project?.name}</h1>
         </div>
         <div className='flex justify-end items-center gap-x-4 w-1/2 sm:w-full   '>
           {/* Invite button */}
@@ -50,7 +51,7 @@ const ProjectPage = ({}: Props) => {
       {/* Project Details */}
       <div className='flex flex-col gap-y-4'>
         <h3 className='text-lg font-semibold text-secondary-950'>Project Details :</h3>
-        <p className='text-sm text-gray-600 leading-tight tracking-tight w-1/2 '>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse repellendus porro praesentium accusamus nobis ducimus aperiam dolore eius distinctio explicabo amet, voluptatum necessitatibus soluta tempore voluptatibus fugiat ipsa! Quisquam, maiores.</p>
+        <p className='text-sm text-gray-600 leading-tight tracking-tight w-1/2 '>{project?.description}</p>
       </div>
       {/* Project Tasks */}
       <div className='flex flex-col gap-y-4'>

@@ -1,10 +1,12 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { Priority, Task, TaskStatus } from "../../types/types";
 import { Calendar, Ellipsis, MessageSquare, Paperclip, Plus } from "lucide-react";
 import {
   useCreateTaskMutation,
+  useDeleteTaskMutation,
   useGetTasksQuery,
   useUpdateTaskStatusMutation,
 } from "@/state/api";
@@ -136,10 +138,13 @@ const TaskCard = ({
   task: Task;
   moveTask: (taskId: string, status: TaskStatus) => void;
 }) => {
-
+    const [isTaskOptionsOpen, setIsTaskOptionsOpen] = useState(false);
     const numberOfComments = (task.comments && task.comments.length) || 0;
     const numberOfAttachments = (task.attachments && task.attachments.length) || 0;
     const numberOfPoints = (task.points && task.points) || 0;
+
+    const [deleteTask] = useDeleteTaskMutation();
+
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "task",
     item: { id: task.id },
@@ -175,10 +180,14 @@ const TaskCard = ({
       <div className="flex justify-between items-center">
         {/* priority  */}
         <div className={` h-5 px-1 py-0.5 rounded text-xs font-normal ${priorityColorMap[task.priority?.toLowerCase() as keyof typeof priorityColorMap]}`}>{task.priority?.toLocaleLowerCase()}</div>
-        <button className="cursor-pointer ">
+        <div className="cursor-pointer" onClick={() => setIsTaskOptionsOpen(!isTaskOptionsOpen)} onMouseLeave={() => setIsTaskOptionsOpen(false)}>
             <Ellipsis size={20} className="text-gray-500 hover:text-gray-900"/>
-
-        </button>
+            {isTaskOptionsOpen && 
+            (<div className="absolute top-5 right-0 bg-white shadow-md rounded-md p-2 w-2/3">
+              <div className="text-sm font-normal text-red-500 hover:bg-red-500 hover:bg-opacity-10 rounded-md p-1 w-full" onClick={() => deleteTask({taskId:task.id.toString()})}>Delete</div>
+              <div className="text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md p-1 w-full">Edit</div>
+          </div>)}
+        </div>
     </div>
     {/* Task attachments */}
     <img src="/attachment.jpg" alt="attachment"  className="rounded-md w-full object-contain"/>

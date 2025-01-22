@@ -96,6 +96,7 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
       setPoints("");
       setDependencies([]);
       setSuccess(true);
+      
     } catch (error: any) {
       console.error("Error creating task:", error.message);
       setSuccess(false);

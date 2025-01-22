@@ -24,12 +24,10 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
 };
 
 export const deleteProject = async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
+    const { projectId } = req.params;
     try {
-        await prisma.project.delete({ where: { id: Number(id) } });
-        await prisma.task.deleteMany({ where: { projectId: Number(id) } });
-        await prisma.projectTeam.deleteMany({ where: { projectId: Number(id) } });
-        res.json({ message: "project deleted" });
+        await prisma.project.delete({ where: { id: Number(projectId) } });
+        res.json({ message: "project deleted successfully" });
     } catch (error:any) {
         res.status(500).json({ message: "error deleting project", error: error.message });
     }
@@ -45,3 +43,17 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
     }
 }
 
+
+export const getProjectDependencies = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const {projectId} = req.params;
+        const tasks = await prisma.task.findMany({where:{projectId:Number(projectId)}});
+
+        const taskIds = tasks.map(task => task.id);
+        
+        const dependencies = await prisma.taskDependency.findMany({where:{dependentTaskId: {in: taskIds},prerequisiteTaskId: {in: taskIds}}});
+        res.json(dependencies);
+    } catch (error: any) {
+        res.status(500).json({ message: "error retrieving project dependencies", error: error.message });
+    }
+}
