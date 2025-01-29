@@ -84,7 +84,7 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
   
       // Send the task creation request to the backend
       await createTask(newTask);
-
+      
       // clear the form
       setTitle("");
       setDescription("");

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Modal from "../Modal";
 import { useAppDispatch } from "@/app/redux";
 import { useAppSelector } from "@/app/redux";
-import { toggleModal } from "@/state";
+import { toggleModal } from "@/state/globalSlice";
 import { Project, projectStatus } from "@/app/types/types";
 import { formatISO } from "date-fns";
 import { useCreateProjectMutation } from "@/state/api";

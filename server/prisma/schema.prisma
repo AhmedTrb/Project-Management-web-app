@@ -10,9 +10,10 @@ datasource db {
 
 model User {
   userId            Int              @id @default(autoincrement())
-  cognitoId         String           @unique
   email             String           @unique
   username          String           @unique
+  password          String?          @db.Text
+  googleId          String?          
   profilePictureUrl String?
   teamId            Int?
   createdAt         DateTime         @default(now())

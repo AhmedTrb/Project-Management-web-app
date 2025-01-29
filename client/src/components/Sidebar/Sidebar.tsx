@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useDeleteProjectMutation, useGetProjectsQuery } from '@/state/api';
 import { useAppDispatch } from '@/app/redux';
-import { toggleModal } from '@/state';
+import { toggleModal } from '@/state/globalSlice';
 type Props = {}
 
 const Sidebar = (props: Props) => {

@@ -17,33 +17,65 @@ export default function Graph({id}: Props) {
   if (isLoading) return <div>Loading...</div>;
   if (isError || !tasks) return <div>Error loading tasks</div>;
   
-  const degreeCounter = new Map<number, number>();
-  const nodeTypes = {
-    taskNode: TaskNode,
-  };
   const taskMap = new Map(tasks.map((task: any) => [task.id, task]));
-  // create nodes
-  const initialNodes = tasks.map((task: any) => {
-    const degree = task.degree;
-    const currentCount = degreeCounter.get(degree) || 0;
-    degreeCounter.set(degree, currentCount + 1);
-
-    return {
-      id: String(task.id),
-      type: 'taskNode',
-      // position is calculated based on the degree of the task and the current count of tasks at that degree
-      position: {
-        x: degree * 250,
-        y: 200 * currentCount,
-      },
-      data: { 
-        label: task.title || 'No Name',
-        description: task.description || 'No description available',
-        status: task.status || TaskStatus.TODO,
-        id: task.id
-      },
-    };
+  
+  // Create a map of tasks to their predecessors
+  const predecessorsMap = new Map<number, number[]>();
+  dependencies?.forEach((dep: any) => {
+    const dependentId = dep.dependentTaskId;
+    if (!predecessorsMap.has(dependentId)) {
+      predecessorsMap.set(dependentId, []);
+    }
+    predecessorsMap.get(dependentId)?.push(dep.prerequisiteTaskId);
   });
+
+  // Calculate y-positions based on predecessors
+  const yPositions = new Map<number, number>();
+  const processedDegrees = new Map<number, number>(); // Keep track of processed nodes per degree
+
+  // Process nodes in order of degree (topological order)
+  const nodesByDegree = [...tasks].sort((a, b) => a.id - b.id);
+  
+  nodesByDegree.forEach((task: any) => {
+    const predecessors = predecessorsMap.get(task.id) || [];
+    const degree = task.degree;
+    
+    if (predecessors.length === 0) {
+      // For nodes without predecessors, stack them vertically
+      const currentCount = processedDegrees.get(degree) || 0;
+      yPositions.set(task.id, currentCount * 200);
+      processedDegrees.set(degree, currentCount + 1);
+    } else {
+      // For nodes with predecessors, calculate average y position of predecessors
+      const predecessorYs = predecessors
+        .map(predId => yPositions.get(predId))
+        .filter((y): y is number => y !== undefined);
+      
+      if (predecessorYs.length > 0) {
+        const avgY = predecessorYs.reduce((sum, y) => sum + y, 0) / predecessorYs.length;
+        // Add a small offset to avoid overlapping
+        const currentCount = processedDegrees.get(degree) || 0;
+        yPositions.set(task.id, avgY + (currentCount * 50));
+        processedDegrees.set(degree, currentCount + 1);
+      }
+    }
+  });
+
+  // create nodes with updated positioning
+  const initialNodes = tasks.map((task: any) => ({
+    id: String(task.id),
+    type: 'taskNode',
+    position: {
+      x: task.degree * 300,
+      y: yPositions.get(task.id) || 0,
+    },
+    data: { 
+      label: task.title || 'No Name',
+      description: task.description || 'No description available',
+      status: task.status || TaskStatus.TODO,
+      id: task.id
+    },
+  }));
 
   // create initial edges
   const initialEdges = dependencies?.map((dependency: any) => ({
@@ -52,19 +84,37 @@ export default function Graph({id}: Props) {
     target: String(dependency.dependentTaskId),
     markerEnd: {
       type: MarkerType.Arrow,
-      width: 20,
-      height: 20,
-      color: '#000',
+      width: 15,
+      height: 15,
+      color: '#f5f5f5',
     },
-    data: {
-      duration: taskMap.get(dependency.prerequisiteTaskId)?.duration,
-    },
+    label: `${taskMap.get(dependency.prerequisiteTaskId)?.duration || 0} days`,
+    style: { strokeWidth: 2 },
+    labelStyle: { fill: '#00F', fontSize: 12 },
   })) || [];
 
+  const onConnect = (connection: any) => {
+    setEdges((eds) => [
+      ...eds,
+      {
+        ...connection,
+        id: `e${connection.source}-${connection.target}`,
+        markerEnd: {
+          type: MarkerType.Arrow,
+          width: 15,
+          height: 15,
+          color: '#f5f5f5',
+        },
+        style: { strokeWidth: 2 },
+        label: '0', // Example label, customize as needed
+        labelStyle: { fill: '#00F', fontSize: 12 },
+      },
+    ]);
+  };
   // use react flow hooks to manage nodes and edges moving them around
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
+  
   
 
   return (
@@ -74,8 +124,9 @@ export default function Graph({id}: Props) {
       edges={initialEdges} 
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      nodeTypes={nodeTypes}
-      defaultViewport={{x:0,y:0,zoom:1}}
+      nodeTypes={{taskNode: (props) => <TaskNode {...props} setNodes={setNodes}  nodes={nodes} />}}
+      onConnect={onConnect}
+      defaultViewport={{x:50,y:50,zoom:0.7}}
     >
       <Background />
       <Controls />
@@ -93,8 +144,11 @@ type TaskNodeProps = {
     status: TaskStatus;
     id: number;
   };
+  setNodes: any;
+  nodes: any;
 };
-const TaskNode = ({ data }: TaskNodeProps) => {
+const TaskNode = ({ data, setNodes,nodes}: TaskNodeProps) => {
+  
   const [isTaskOptionsOpen, setIsTaskOptionsOpen] = useState(false);
   const [deleteTask] = useDeleteTaskMutation();
 
@@ -117,7 +171,7 @@ const TaskNode = ({ data }: TaskNodeProps) => {
             <Ellipsis size={20} className="text-gray-500 hover:text-gray-900"/>
             {isTaskOptionsOpen && 
             (<div className="absolute top-5 right-0 bg-white shadow-md rounded-md p-2 w-2/3">
-              <div className="text-sm font-normal text-red-500 hover:bg-red-500 hover:bg-opacity-10 rounded-md p-1 w-full" onClick={() => deleteTask({taskId:data.id.toString()})}>Delete</div>
+              <div className="text-sm font-normal text-red-500 hover:bg-red-500 hover:bg-opacity-10 rounded-md p-1 w-full" onClick={() => {deleteTask({taskId:data.id.toString()});setNodes(nodes.filter((node:any) => node.id !== data.id.toString()))}}>Delete</div>
               <div className="text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md p-1 w-full">Edit</div>
           </div>)}
         </div>

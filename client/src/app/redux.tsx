@@ -1,12 +1,13 @@
 import { useRef } from "react";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import authReducer from "@/state/authSlice";
 import {
   TypedUseSelectorHook,
   useDispatch,
   useSelector,
   Provider,
 } from "react-redux";
-import globalReducer from "@/state";
+import globalReducer from "@/state/globalSlice";
 import { api } from "@/state/api";
 import { setupListeners } from "@reduxjs/toolkit/query";
 
@@ -51,6 +52,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   global: globalReducer,
   [api.reducerPath]: api.reducer,
+  auth: authReducer,
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
@@ -64,6 +66,7 @@ export const makeStore = () => {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
       }).concat(api.middleware),
+      devTools: true,
   });
 };
 

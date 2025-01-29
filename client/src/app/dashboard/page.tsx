@@ -5,11 +5,18 @@ import React from "react";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import Card from "@/components/Card/Card";
+import { ArrowLeft } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { useGetProjectsQuery } from "@/state/api";
+import { projectStatus } from "../types/types";
 type Props = {};
 
 function HomePage({}: Props) {
+
+  const {data: projects} = useGetProjectsQuery();
   return (
-    <div className="flex flex-col justify-start w-full gap-y-10 p-10 bg-[#f5f5f5] min-h-screen">
+    <div className="flex flex-col justify-start w-full gap-y-10 p-10 bg-[#f5f5f5] h-full">
       {/* Top Section */}
       <div className="grid lg:grid-cols-5 gap-x-4 gap-y-5 w-full md:grid-cols-3  sm:grid-cols-1">
         {/* running tasks */}
@@ -41,8 +48,7 @@ function HomePage({}: Props) {
           </p>
           <div className="h-20">
           <LineChart
-            width={450}
-            height={150}
+          
             xAxis={[{ 
               data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
               scaleType: "band"
@@ -62,10 +68,10 @@ function HomePage({}: Props) {
               },
               "& .MuiAreaElement-root": {
                 fillOpacity: 0.1
-              }
-
+              },
+              width:400
             }}
-            className="h-full"
+
           />
           </div>
         </div>
@@ -77,6 +83,23 @@ function HomePage({}: Props) {
           </LocalizationProvider>
           </div>
         </div>
+      </div>
+      {/* Active projects */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-secondary-950 text-xl font-bold">Active Projects</h2>
+        <div className="flex justify-start gap-x-3 items-center">
+          <div className="cursor-pointer hover:bg-gray-200 rounded-full p-1">
+          <ArrowLeft size={20} className="text-secondary-950" />
+          </div>
+          <div className="cursor-pointer hover:bg-gray-200 rounded-full p-1">
+          <ArrowRight size={20} className="text-secondary-950" />
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-x-4 gap-y-5 w-full overflow-x-hidden overflow-y-auto">
+        {/* {projects?.filter((project) => project.status === projectStatus.IN_PROGRESS || project.status === projectStatus.PLANNING).map((project) => (
+          <Card key={project.id} project={project} />
+        ))} */}
       </div>
     </div>
   );
