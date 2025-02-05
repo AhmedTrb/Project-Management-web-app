@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTaskById = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getTasks = void 0;
+exports.getTaskById = exports.getUserTasks = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getProjectTasks = void 0;
 const client_1 = require("@prisma/client");
+const jwt_1 = require("../utils/jwt");
 const prisma = new client_1.PrismaClient();
-const getTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getProjectTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { projectId } = req.params;
     try {
         const tasks = yield prisma.task.findMany({ where: { projectId: Number(projectId) } });
@@ -22,8 +23,9 @@ const getTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ message: "error retrieving tasks" });
     }
 });
-exports.getTasks = getTasks;
+exports.getProjectTasks = getProjectTasks;
 const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { title, description, status, priority, tags, startDate, dueDate, points, projectId, dependencies, // List of prerequisite task IDs
          } = req.body;
@@ -39,6 +41,12 @@ const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             !projectId) {
             return res.status(400).json({ error: "All fields are required." });
         }
+        // Get user ID from access token
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+        const decoded = (0, jwt_1.verifyAccessToken)(token);
+        if (!decoded)
+            return res.status(401).json({ error: "Unauthorized" });
+        const userId = decoded === null || decoded === void 0 ? void 0 : decoded.userId;
         // Calculate duration in days
         const duration = Math.ceil((new Date(dueDate).getTime() - new Date(startDate).getTime()) / (1000 * 3600 * 24));
         //  Create the new task
@@ -53,7 +61,7 @@ const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 dueDate: new Date(dueDate),
                 points: parseInt(points),
                 projectId: parseInt(projectId),
-                authorUserId: 1,
+                authorUserId: parseInt(userId),
                 duration: duration,
             },
         });
@@ -99,6 +107,20 @@ const deleteTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteTask = deleteTask;
+const getUserTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+    const decoed = (0, jwt_1.verifyAccessToken)(token);
+    const userId = decoed === null || decoed === void 0 ? void 0 : decoed.userId;
+    try {
+        const tasks = yield prisma.task.findMany({ where: { authorUserId: Number(userId) } });
+        res.status(201).json(tasks);
+    }
+    catch (error) {
+        res.status(500).json({ message: "error retrieving user tasks", error: error.message });
+    }
+});
+exports.getUserTasks = getUserTasks;
 const getTaskById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { taskId } = req.params;
     try {
@@ -106,7 +128,7 @@ const getTaskById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.json(task);
     }
     catch (error) {
-        res.status(500).json({ message: "error retrieving task" });
+        res.status(500).json({ message: "error retrieving task", error: error.message });
     }
 });
 exports.getTaskById = getTaskById;

@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { PrismaClient} from "@prisma/client";
+import { verifyAccessToken } from "../utils/jwt";
 
 const prisma = new PrismaClient();
 
 
-export const getTasks = async (req: Request, res: Response): Promise<void> => {
+export const getProjectTasks = async (req: Request, res: Response): Promise<void> => {
     const { projectId } = req.params;
     try {
         const tasks = await prisma.task.findMany({ where: { projectId: Number(projectId) } });
@@ -45,6 +46,14 @@ export const createTask = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
+    // Get user ID from access token
+    const token = req.headers.authorization?.split(" ")[1];
+    const decoded = verifyAccessToken(token as string);
+
+    if (!decoded) return res.status(401).json({ error: "Unauthorized" });
+
+    const userId = decoded?.userId;
+
     // Calculate duration in days
     const duration = Math.ceil((new Date(dueDate).getTime() - new Date(startDate).getTime()) / (1000 * 3600 * 24));
 
@@ -60,7 +69,7 @@ export const createTask = async (req: Request, res: Response) => {
         dueDate: new Date(dueDate),
         points: parseInt(points),
         projectId: parseInt(projectId),
-        authorUserId: 1,
+        authorUserId: parseInt(userId),
         duration: duration,
       },
     });
@@ -106,14 +115,25 @@ export const deleteTask = async (req:Request, res:Response): Promise<void> => {
     }
 };
 
+export const getUserTasks = async (req: Request, res: Response): Promise<void> => {
+    const token = req.headers.authorization?.split(" ")[1];
+    const decoed = verifyAccessToken(token as string);
+    const userId = decoed?.userId;
 
+    try {
+        const tasks = await prisma.task.findMany({ where: { authorUserId: Number(userId)}});
+        res.status(201).json(tasks);
+    } catch (error: any) {
+        res.status(500).json({ message: "error retrieving user tasks", error: error.message });
+    }
+}
 export const getTaskById = async (req: Request, res: Response): Promise<void> => {
     const { taskId } = req.params;
     try {
         const task = await prisma.task.findUnique({ where: { id: Number(taskId) } });
         res.json(task);
-    } catch (error) {
-        res.status(500).json({ message: "error retrieving task" });
+    } catch (error:any) {
+        res.status(500).json({ message: "error retrieving task", error: error.message });
     }
 };
 

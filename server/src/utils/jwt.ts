@@ -1,24 +1,32 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { User } from '@prisma/client';
 
-const JWT_SECRET = process.env.JWT_SECRET ;
-const JWT_EXPIRATION = '7d';
 
-export const generateToken = (user: User) => {
-  return jwt.sign(
-    { 
-      userId: user.userId, 
-      email: user.email 
-    }, 
-    JWT_SECRET as string, 
-    { expiresIn: JWT_EXPIRATION }
-  );
+const JWT_ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET ;
+const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET ;
+const development = process.env.STATUS === 'development'; ;
+// Generate Access Token
+export const generateAccessToken = (userId: string) => {
+  return jwt.sign({ userId }, JWT_ACCESS_TOKEN_SECRET as string, { expiresIn: '4h' });
 };
 
-export const verifyToken = (token: string): JwtPayload | null => {
+// Generate Refresh Token 
+export const generateRefreshToken = (userId: string) => {
+  return jwt.sign({ userId }, JWT_REFRESH_TOKEN_SECRET as string, { expiresIn: '7d' });
+};
+
+// Verify Access Token
+export const verifyAccessToken = (token: string): JwtPayload | null => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET as string) as JwtPayload;
-    return decoded;
+    return jwt.verify(token, JWT_ACCESS_TOKEN_SECRET as string) as JwtPayload;
+  } catch (error) {
+    return null;
+  }
+};
+
+// Verify Refresh Token
+export const verifyRefreshToken = (token: string): JwtPayload | null => {
+  try {
+    return jwt.verify(token, JWT_REFRESH_TOKEN_SECRET as string) as JwtPayload;
   } catch (error) {
     return null;
   }

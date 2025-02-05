@@ -15,37 +15,37 @@ export const Signup = ({setLogin}:Props) => {
     const [phone, setPhone] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
     const router = useRouter();
-    const [signupUser, { isLoading ,error}] = useSignUpUserMutation();
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [signupUser, { isLoading ,error:signupError}] = useSignUpUserMutation();
     const dispatch = useAppDispatch();
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      setError(""); 
+      setLoading(true);
     
-      // Basic validation checks
       if (!username || !email || !phone || !password || !confirmPassword) {
-        console.error("All fields are required.");
+        setError("All fields are required.");
+        setLoading(false);
         return;
       }
     
       if (password !== confirmPassword) {
-        console.error("Passwords do not match.");
+        setError("Passwords do not match.");
+        setLoading(false);
         return;
       }
     
       try {
-        const result = await signupUser({ username, email, password }).unwrap(); 
-    
-        if (!result?.user || !result?.token) {
-          console.error("Invalid response from server.");
-          return;
-        }
-    
+        const result = await signupUser({ username, email, password }).unwrap();
         dispatch(setCredentials({ user: result.user, token: result.token }));
-
         router.push("/dashboard");
-        router.refresh();
-      } catch (error:any) {
-        console.error("Signup failed:", error.message);
+      } catch (error: any) {
+        setError(error?.data?.message || "Signup failed. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
   

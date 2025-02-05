@@ -1,7 +1,7 @@
 "use client";
-import Login from '@/components/Login/Login';
-import { SignIn } from '@/components/Signin';
-import { Signup } from '@/components/Signup';
+
+import {SignIn} from "./Signin";
+import {Signup} from "./Signup";
 import React ,{useState}from 'react'
 
 type Props = {}

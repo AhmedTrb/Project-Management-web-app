@@ -1,47 +1,47 @@
-"use client"
+"use client";
+import { useAppDispatch } from "@/app/redux";
+import { useLoginMutation } from "@/state/api";
+import { setCredentials } from "@/state/authSlice";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
-const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
+type Props = {
+  setLogin:React.Dispatch<React.SetStateAction<boolean>>;
+};
+export const SignIn = ({setLogin}: Props) => {
+  const dispatch = useAppDispatch();
+  const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const toggleForm = () => setIsLogin(!isLogin);
+  const [login] = useLoginMutation();
+  const router = useRouter();
 
-  
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(isLogin){
-        
-    }else{
-        
+    setError(""); 
+    
+    if (!email || !password) {
+      setError("Please fill in all fields");
+      return;
     }
+  
+    try {
+      const result = await login({ email, password }).unwrap();
+      dispatch(setCredentials({ user: result.user, token: result.token }));
+
+      console.log(result);
+      router.push("/dashboard");
+    } catch (error: any) {
+      setError(error?.data?.message || "Login failed. Please try again.");
+    } 
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-primary-50">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-center text-primary-600">
-          {isLogin ? "Login" : "Sign Up"}
-        </h2>
-        <form className="mt-6 space-y-4">
-          {!isLogin && (
-            
-            <div className="flex flex-col gap-2">
-                
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                className="w-full px-4 py-2 mt-1 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Enter your full name"
-              />
-            </div>
-          )}
+        <h2 className="text-2xl font-semibold text-center text-primary-600">Sign In</h2>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email Address
@@ -49,7 +49,8 @@ const Login = () => {
             <input
               type="email"
               id="email"
-              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 mt-1 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Enter your email"
             />
@@ -61,7 +62,8 @@ const Login = () => {
             <input
               type="password"
               id="password"
-              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 mt-1 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Enter your password"
             />
@@ -70,22 +72,12 @@ const Login = () => {
             type="submit"
             className="w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
-            {isLogin ? "Login" : "Sign Up"}
+            Sign In
           </button>
         </form>
-        <p className="mt-4 text-sm text-center text-gray-600">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button
-            type="button"
-            onClick={toggleForm}
-            className="font-medium text-primary-600 hover:underline"
-          >
-            {isLogin ? "Sign Up" : "Login"}
-          </button>
-        </p>
+
+        <div className="text-center mt-5 text-gray-600">Don't have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(false)}>Sign Up</span> </div>
       </div>
     </div>
   );
 };
-
-export default Login;

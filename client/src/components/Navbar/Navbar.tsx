@@ -4,6 +4,7 @@ import { Bell, CalendarDays, ChevronDown, Search } from 'lucide-react'
 import React, { useState } from 'react';
 import { logOut } from '@/state/authSlice';
 import { useRouter } from 'next/navigation';
+import { useLogoutMutation } from '@/state/api';
 
 type Props = {}
 
@@ -11,10 +12,10 @@ function Navbar({}: Props) {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const user = useAppSelector((state) => state.auth.user);
-    console.log(user);
+    const [logout] = useLogoutMutation();
     const [dropDownIsOpen, setDropDownIsOpen] = useState(false);
   return (
-    <div className='flex items-center justify-between h-16 px-10 md:px-8 w-full border-b border-[#d5d5d5]'>
+    <div className='flex items-center justify-between h-16 py-5 px-10 md:px-8 w-full border-b border-[#d5d5d5]'>
         {/* SEARCH BAR */}
         <div className='bg-gray-100 rounded-md px-2 py-1 flex items-center gap-x-2 w-1/3'>
             <Search size={20} className='text-gray-500'/>
@@ -46,7 +47,7 @@ function Navbar({}: Props) {
                         {dropDownIsOpen && (
                             <div className='absolute top-5 right-0 w-40 bg-white shadow rounded-md p-2 border border-gray-200 flex flex-col gap-y-2 z-50'>
                                 <div className='cursor-pointer border-b border-red-600 w-full'>
-                                    <p className='text-sm  text-red-500  mb-1 hover:text-red-600 hover:bg-red-300 hover:bg-opacity-40 rounded-md px-2 py-1 w-full' onClick={() => {dispatch(logOut()), router.push("/")}}>Logout</p>
+                                    <p className='text-sm  text-red-500  mb-1 hover:text-red-600 hover:bg-red-300 hover:bg-opacity-40 rounded-md px-2 py-1 w-full' onClick={() => {dispatch(logOut()),logout(), router.push("/")}}>Logout</p>
                                 </div>
                                 <div className='cursor-pointer border-b border-gray-500 w-full'>
                                     <p className='text-sm  text-gray-500  mb-1 hover:text-gray-950 hover:bg-gray-100 rounded-md px-2 py-1'>Profile</p>

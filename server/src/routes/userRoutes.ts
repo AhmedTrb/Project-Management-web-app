@@ -1,18 +1,13 @@
 import express from 'express';
-import { 
-  localSignup, 
-  localLogin, 
-  googleSignup ,
+import {
   getAuthenticatedUser
 } from '../controllers/userController';
 import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 
-router.post('/signup', localSignup);
-router.post('/login', localLogin);
-router.post('/google-signup', googleSignup);
-router.post('/authenticated', getAuthenticatedUser);
+
+router.post('/authenticated',authMiddleware,getAuthenticatedUser);
 
 
 export default router;

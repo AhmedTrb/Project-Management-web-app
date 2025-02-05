@@ -1,7 +1,7 @@
 import { Task } from '@/app/types/types'
 import React from 'react'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import { useGetTasksQuery } from '@/state/api';
+import { useGetProjectTasksQuery } from '@/state/api';
 import { format } from 'date-fns/format';
 
 
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export default function ListView({id}: Props) {
-  const { data: tasks, isLoading, error } = useGetTasksQuery({ projectId: id });
+  const { data: tasks, isLoading, error } = useGetProjectTasksQuery({ projectId: id });
 
   const priorityColorMap = {
     low: "bg-green-400 bg-opacity-20 text-green-400",

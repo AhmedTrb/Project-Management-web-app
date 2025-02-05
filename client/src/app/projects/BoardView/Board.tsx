@@ -13,7 +13,7 @@ import {
 import {
   useCreateTaskMutation,
   useDeleteTaskMutation,
-  useGetTasksQuery,
+  useGetProjectTasksQuery,
   useUpdateTaskStatusMutation,
 } from "@/state/api";
 import { useParams } from "next/navigation";
@@ -26,7 +26,7 @@ type Props = {
 };
 const taskStatus = ["To Do", "In Progress", "Under Review", "Completed"];
 export default function Board({ id, setIsNewTaskModalOpen }: Props) {
-  const { data: tasks, isLoading, error } = useGetTasksQuery({ projectId: id });
+  const { data: tasks, isLoading, error } = useGetProjectTasksQuery({ projectId: id });
   const [createTask] = useCreateTaskMutation();
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
 

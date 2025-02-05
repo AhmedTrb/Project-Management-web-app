@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Modal from "../Modal";
 import { Priority, projectStatus, Task, TaskDependency, TaskStatus } from "@/app/types/types";
-import { useCreateTaskMutation, useGetTasksQuery, useGetProjectByIdQuery } from "@/state/api";
+import { useCreateTaskMutation, useGetProjectTasksQuery, useGetProjectByIdQuery } from "@/state/api";
 import { formatISO } from "date-fns";
 import Select from 'react-select';
 
@@ -27,7 +27,7 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
 
   // api calls
   const [createTask, {isLoading, error}] = useCreateTaskMutation(); 
-  const { data: tasks } = useGetTasksQuery({projectId: projectId});
+  const { data: tasks } = useGetProjectTasksQuery({projectId: projectId});
 
   const taskOptions = tasks?.map((task) => ({
     value: task.id,

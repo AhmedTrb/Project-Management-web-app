@@ -1,12 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 interface initialStateType {
-  isSidebarCollapsed: boolean;
+  isSidebarOpen: boolean;
   isModalOpen: boolean;
 }
 
 const initialState: initialStateType = {
-  isSidebarCollapsed: false,
+  isSidebarOpen: false,
   isModalOpen: false,
 };
 
@@ -14,8 +14,11 @@ export const globalSlice = createSlice({
   name: "global",
   initialState,
   reducers: {
-    toggleSidebar: (state) => {
-      state.isSidebarCollapsed = !state.isSidebarCollapsed;
+    toggleSidebarOpen: (state) => {
+      state.isSidebarOpen = true;
+    },
+    toggleSidebarClose: (state) => {
+      state.isSidebarOpen = false;
     },
     toggleModal: (state) => {
       state.isModalOpen = !state.isModalOpen;
@@ -23,5 +26,5 @@ export const globalSlice = createSlice({
   },
 });
 
-export const { toggleSidebar, toggleModal } = globalSlice.actions;
+export const {toggleModal, toggleSidebarClose, toggleSidebarOpen } = globalSlice.actions;
 export default globalSlice.reducer;

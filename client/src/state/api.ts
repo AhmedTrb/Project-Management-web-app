@@ -1,4 +1,4 @@
-import { Project, Task, TaskDependency, User } from "@/app/types/types";
+import { Project, Task, TaskDependency, Team, User } from "@/app/types/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logOut, setCredentials } from "./authSlice";
 import { RootState } from "@/app/redux";
@@ -8,11 +8,10 @@ dotenv.config();
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
-  credentials: "include",
+  credentials: "include", 
   prepareHeaders: (headers, { getState }) => {
-    const token = localStorage.getItem("token");
+    const token = (getState() as RootState).auth.token;
     if (token) {
-
       headers.set("authorization", `Bearer ${token}`);
     }
     return headers;
@@ -31,13 +30,17 @@ const baseQueryWithReauth = async (
     console.log("sending refresh token");
 
     // Send the refresh token to get a new access token
-    const refreshResult = await baseQuery("/refresh", api, extraOptions);
-    console.log(refreshResult);
+    const refreshResult = await baseQuery(
+      { url: "/api/refresh/token", method: 'GET', credentials: "include" }, 
+      api, 
+      extraOptions
+    );
+    
 
     if (refreshResult?.data) {
       // Assuming refreshResult.data contains the new token (and possibly other data)
-      const newToken = (refreshResult?.data as { token: string; user: User })
-        ?.token;
+      const newToken = (refreshResult?.data as { accessToken: string })
+        ?.accessToken;
       const user = (api.getState() as RootState).auth.user;
 
       if (user && newToken) {
@@ -63,16 +66,25 @@ const baseQueryWithReauth = async (
 export const api = createApi({
   baseQuery: baseQueryWithReauth,
   reducerPath: "api",
-  tagTypes: ["Projects", "Tasks"],
+  tagTypes: ["Projects", "Tasks", "Teams"],
 
   endpoints: (build) => ({
-    // register user
+    // get user teams and team members
+    getUserTeams: build.query<{teams:Team[]}, void>({
+      query: () => ({
+        url: "/api/teams",
+        method: "GET",
+      }),
+      providesTags: ["Teams"],
+    }),
+
+    // signup user
     signUpUser: build.mutation<
       { token: string; user: User },
       { username: string; email: string; password: string }
     >({
       query: ({ username, email, password }) => ({
-        url: "/api/users/signup",
+        url: "/api/auth/signup",
         method: "POST",
         body: { username, email, password },
       }),
@@ -84,10 +96,19 @@ export const api = createApi({
       { email: string; password: string }
     >({
       query: ({ email, password }) => ({
-        url: "/api/users/login",
+        url: "/api/auth/login",
         method: "POST",
         body: { email, password },
       }),
+    }),
+
+    // logout user 
+    logout: build.mutation<void,void>({
+      query: () =>({
+        url: "/api/auth/logout",
+        method: "POST"
+      }),
+      invalidatesTags: ["Projects", "Tasks"],
     }),
     // get authenticated user
     getAuthenticatedUser: build.query<{ token: string; user: User },void>({
@@ -127,8 +148,15 @@ export const api = createApi({
       }),
       invalidatesTags: ["Projects"],
     }),
+
+    // get user tasks
+    getUserTasks: build.query<Task[],void >({
+      query: () =>'/api/tasks/user',
+      providesTags: ["Tasks"],
+    }),
+
     // Get tasks for a project
-    getTasks: build.query<Task[], { projectId: string }>({
+    getProjectTasks: build.query<Task[], { projectId: string }>({
       query: ({ projectId }) => ({
         url: `/api/tasks/${projectId}`,
         method: "GET",
@@ -178,15 +206,18 @@ export const api = createApi({
 });
 
 export const {
+  useGetUserTeamsQuery,
+  useGetUserTasksQuery,
   useGetProjectsQuery,
   useCreateProjectMutation,
-  useGetTasksQuery,
+  useGetProjectTasksQuery,
   useCreateTaskMutation,
   useUpdateTaskStatusMutation,
   useGetProjectByIdQuery,
   useDeleteTaskMutation,
   useDeleteProjectMutation,
   useGetProjectDependenciesQuery,
+  useLogoutMutation,
   useLoginMutation,
   useGetAuthenticatedUserQuery,
   useSignUpUserMutation,

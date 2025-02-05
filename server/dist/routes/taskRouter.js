@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const taskController_1 = require("../controllers/taskController");
+const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
-router.get("/:projectId", taskController_1.getTasks);
-router.post("/:projectId", taskController_1.createTask);
-router.patch("/:taskId/status", taskController_1.updateTaskStatus);
-router.delete("/:taskId", taskController_1.deleteTask);
-router.get("/:taskId", taskController_1.getTaskById);
+router.get("/:projectId", auth_1.authMiddleware, taskController_1.getProjectTasks);
+router.post("/:projectId", auth_1.authMiddleware, taskController_1.createTask);
+router.patch("/:taskId/status", auth_1.authMiddleware, taskController_1.updateTaskStatus);
+router.get("/user", auth_1.authMiddleware, taskController_1.getUserTasks);
+router.delete("/:taskId", auth_1.authMiddleware, taskController_1.deleteTask);
+router.get("/:taskId", auth_1.authMiddleware, taskController_1.getTaskById);
 exports.default = router;
