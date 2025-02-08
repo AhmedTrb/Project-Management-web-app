@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { useGetProjectsQuery, useGetUserTasksQuery } from "@/state/api";
-import { projectStatus, Task, TaskStatus } from "../types/types";
+import { projectStatus, Task, TaskStatus, Project } from "../types/types";
 import { ActivityChart } from "./ActivityChart/chart-line-default";
 import { Calendar } from "@/components/ui/calendar";
 import ProjectCard from "@/components/ProjectCard";
@@ -53,7 +53,7 @@ function HomePage({}: Props) {
               variant="determinate"
               value={25}
               size={90}
-              sx={{ color: "white" }}
+              sx={{ color: "white", "& .MuiCircularProgress-circle": { stroke: "white" } }}
               thickness={2}
             />
             <div className="flex flex-col justify-start items-start gap-y-[2px]">
@@ -92,16 +92,13 @@ function HomePage({}: Props) {
           </div>
         </div>
       </div>
-      <div className="flex gap-x-4 justify-start items-start gap-y-5  overflow-x-scroll h-full overflow-y-visible">
-        {projects
-          ?.filter(
-            (project) =>
-              project.status === projectStatus.IN_PROGRESS ||
-              project.status === projectStatus.PLANNING
-          )
-          .map((project) => (
+      <div>
+        <div className="flex gap-x-4 justify-start items-start max-w-fit overflow-x-hidden gap-y-5 h-full overflow-y-visible scroll-smooth ">
+        {!projects || projects.length === 0 ? <div className="text-center font-normal text-lg text-secondary-950">No projects provided</div> :
+          projects.map((project: Project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
+        </div>
       </div>
 
       {/* Active Tasks */}

@@ -128,3 +128,4 @@ model Comment {
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
+

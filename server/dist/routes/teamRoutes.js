@@ -8,4 +8,5 @@ const teamController_1 = require("../controllers/teamController");
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 router.get("/", auth_1.authMiddleware, teamController_1.getAllTeams);
+router.get("/members/project/:projectId", auth_1.authMiddleware, teamController_1.getAllTeams);
 exports.default = router;

@@ -1,9 +1,10 @@
-import { Task } from '@/app/types/types';
+import { Priority, Task } from '@/app/types/types';
 import { Avatar, AvatarGroup } from '@mui/material';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react'
+import { PriorityComponent } from '../PriorityComponent';
 
 type Props = {
     task: Task
@@ -31,14 +32,7 @@ export const TaskCard = ({task}: Props) => {
     <div className='flex justify-between items-center w-full'>
         <p className='text-sm text-gray-500'>{task.tags?.split(",").map((tag) => tag)}</p>
 
-        <div
-          className={` h-5 px-1 py-0.5 rounded text-xs font-normal ${
-            priorityColorMap[
-              task.priority?.toLowerCase() as keyof typeof priorityColorMap
-            ]
-          }`}
-        >{task.priority?.toLocaleLowerCase()}
-        </div>
+        <PriorityComponent priority={task?.priority as Priority} />
     </div>
     <div className="h-12 overflow-hidden">
       <p className="text-sm text-gray-500 line-clamp-2">{task?.description}</p>

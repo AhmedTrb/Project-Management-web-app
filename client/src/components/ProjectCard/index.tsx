@@ -22,7 +22,7 @@ export default function ProjectCard({project}: Props) {
       };
   return (
     <Link href={`/projects/${project?.id}`} className='block'>
-    <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out overflow-visible">
+    <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 max-w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out overflow-visible">
     <img
       src="/projectCover.png"
       alt="project"

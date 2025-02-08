@@ -7,16 +7,13 @@ import { useGetUserTeamsQuery } from '@/state/api';
 
 
 const MembersPage = () => {
-  const users:User[] = sampleUsers;
-  const teams:Team[] = sampleTeams;
-  const {data:teamsss} = useGetUserTeamsQuery();
+  // const users:User[] = sampleUsers;
+  // const teams:Team[] = sampleTeams;
+  const {data:teams} = useGetUserTeamsQuery();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredTeams, setFilteredTeams] = useState<Team[]>(teams);
-  console.log(teamsss);
+  const [filteredTeams, setFilteredTeams] = useState<Team[]>(teams || []);
   const currentUser = useAppSelector((state) => state.auth.user);
-  const getTeamUsers = (team: Team): User[] => {
-    return users.filter(user => user.teamId === team.id);
-  };
+  
   const getUserRole = (userId: number, team: Team): string => {
     if (userId === team.projectManagerUserId) return 'Project Manager';
     if (userId === team.productOwnerUserId) return 'Product Owner';
@@ -37,7 +34,7 @@ const MembersPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
-    const filtered = teams.filter(team => team.teamName.toLowerCase().includes(event.target.value.toLowerCase()));
+    const filtered = teams ? teams.filter(team => team.teamName.toLowerCase().includes(event.target.value.toLowerCase())) : [];
     setFilteredTeams(filtered);
   };
 
@@ -73,7 +70,7 @@ const MembersPage = () => {
         <main className="px-6 py-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
-              {filteredTeams.map((team) => (
+              {teams?.map((team) => (
                 <div
                 key={team.id}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200"
@@ -87,7 +84,7 @@ const MembersPage = () => {
           
                     </div>
                     {currentUser?.userId && getUserRole( currentUser.userId,team) === 'Project Manager' && (
-                      <span className="px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-sm">
+                      <span className="px-3 py-1 bg-primary-100 text-secondary-950 rounded-full text-sm">
                         You manage this team
                       </span>
                     )}
@@ -96,7 +93,7 @@ const MembersPage = () => {
           
                 <div className="p-6">
                   <div className="grid gap-4">
-                    {getTeamUsers(team).map((user) => {
+                    {team.user ? team.user.map((user) => {
                       const role = getUserRole( user.userId,team);
                       return (
                         <div
@@ -136,11 +133,11 @@ const MembersPage = () => {
                           </span>
                         </div>
                       );
-                    })}
+                    } ) : <div className='text-center w-full text-secondary-950 font-normal'>No Team members found</div>} 
                   </div>
                 </div>
               </div>
-              ))}
+              ))} 
             </div>
           </div>
         </main>

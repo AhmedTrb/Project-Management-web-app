@@ -9,6 +9,8 @@ import { useParams } from 'next/navigation';
 import Graph from '../GraphView/Graph';
 import ListView from '../ListView/List';
 import { useGetProjectByIdQuery } from '@/state/api';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
+import InviteMemberModal from '@/components/InviteMemberModal';
 
 
 type Props = {
@@ -17,15 +19,21 @@ type Props = {
 
 const ProjectPage = ({}: Props) => {
   const { id } = useParams<{ id: string }>();
+
+  
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
+  const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isActiveTab, setIsActiveTab] = useState("BOARD");
   const { data: project, isLoading, error } = useGetProjectByIdQuery({projectId: id});
 
   return (
     <div className='flex flex-col justify-start w-full gap-y-6 p-10'>
 
-      {/* New Task Modal */}
+      {/* New Task Modal and Task details Modal */}
+      <InviteMemberModal  isOpen={isInviteMemberModalOpen} onClose={()=>setIsInviteMemberModalOpen(false)}/>
       <NewTaskModal projectId={id} isOpen={isNewTaskModalOpen} onClose={()=>setIsNewTaskModalOpen(false)}/>
+      <TaskDetailsModal />
+
       {/* Header */}
       <div className='flex justify-between items-start sm:flex-col md:flex-row border-b border-gray-200 pb-4'>
         
@@ -34,7 +42,7 @@ const ProjectPage = ({}: Props) => {
         <div className='flex justify-end items-center gap-x-4 w-1/2 sm:w-full   '>
           {/* Invite button */}
           <div className="flex items-center gap-x-2">
-            <button className='bg-primary-600 bg-opacity-40 text-white p-1 rounded-md'>
+            <button className='bg-primary-600 bg-opacity-40 text-white p-1 rounded-md' onClick={() => setIsInviteMemberModalOpen(true)}>
               <Plus size={14} className='text-primary-600'/>
             </button>
             <p className='text-sm text-primary-600'>Invite</p>

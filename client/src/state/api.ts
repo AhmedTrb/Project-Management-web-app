@@ -3,6 +3,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logOut, setCredentials } from "./authSlice";
 import { RootState } from "@/app/redux";
 import dotenv from "dotenv";
+import { url } from "inspector";
+import { get } from "http";
 
 dotenv.config();
 
@@ -66,18 +68,27 @@ const baseQueryWithReauth = async (
 export const api = createApi({
   baseQuery: baseQueryWithReauth,
   reducerPath: "api",
-  tagTypes: ["Projects", "Tasks", "Teams"],
+  tagTypes: ["Projects", "Tasks", "Teams","Users"],
 
   endpoints: (build) => ({
     // get user teams and team members
-    getUserTeams: build.query<{teams:Team[]}, void>({
+    getUserTeams: build.query<Team[], void>({
       query: () => ({
         url: "/api/teams",
         method: "GET",
       }),
       providesTags: ["Teams"],
     }),
-
+    // add team member to project team
+    addTeamMember: build.mutation<User, { projectId: string; userId: string }>({
+      query: ({ projectId, userId }) => ({
+        url: "/api/teams",
+        method: "PUT",
+        body: { projectId, userId },
+      }),
+      invalidatesTags: ["Teams"],
+    }),
+       
     // signup user
     signUpUser: build.mutation<
       { token: string; user: User },
@@ -99,6 +110,15 @@ export const api = createApi({
         url: "/api/auth/login",
         method: "POST",
         body: { email, password },
+      }),
+    }),
+
+    // get all users
+    getUsers: build.query<User[], void>({
+      query: () =>({
+        url: "/api/users",
+        method: "GET",
+        providesTags: ["Users"]
       }),
     }),
 
@@ -151,7 +171,10 @@ export const api = createApi({
 
     // get user tasks
     getUserTasks: build.query<Task[],void >({
-      query: () =>'/api/tasks/user',
+      query: () =>({
+        url:'api/tasks/user',
+        method:'GET',
+      }),
       providesTags: ["Tasks"],
     }),
 
@@ -206,6 +229,7 @@ export const api = createApi({
 });
 
 export const {
+  useGetUsersQuery,
   useGetUserTeamsQuery,
   useGetUserTasksQuery,
   useGetProjectsQuery,

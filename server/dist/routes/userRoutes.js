@@ -8,4 +8,5 @@ const userController_1 = require("../controllers/userController");
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 router.post('/authenticated', auth_1.authMiddleware, userController_1.getAuthenticatedUser);
+router.get('/', auth_1.authMiddleware, userController_1.getAllUsers);
 exports.default = router;

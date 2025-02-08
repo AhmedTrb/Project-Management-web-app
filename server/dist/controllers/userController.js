@@ -9,76 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAuthenticatedUser = exports.googleSignup = void 0;
+exports.getAllUsers = exports.getAuthenticatedUser = exports.googleSignup = void 0;
 const client_1 = require("@prisma/client");
 const jwt_1 = require("../utils/jwt");
 const google_auth_1 = require("../utils/google-auth");
 const prisma = new client_1.PrismaClient();
-// export const localSignup = async (req: Request, res: Response) => {
-//   try {
-//     const { username, email, password } = req.body;
-//     // Check if user already exists
-//     const existingUser = await prisma.user.findUnique({ 
-//       where: { 
-//         email 
-//       } 
-//     });
-//     if (existingUser) {
-//       return res.status(400).json({ error: 'User already exists' });
-//     }
-//     // Hash password
-//     const hashedPassword = await hashPassword(password);
-//     // Create new user
-//     const user = await prisma.user.create({
-//       data: {
-//         username,
-//         email,
-//         password: hashedPassword,
-//       }
-//     });
-//     // Generate JWT
-//     const token = generateAccessToken(user.userId.toString());
-//     res.status(201).json({ 
-//       user: { 
-//         id: user.userId, 
-//         username: user.username, 
-//         email: user.email 
-//       }, 
-//       token 
-//     });
-//   } catch (error: any) {
-//     res.status(500).json({ error: 'Signup failed' ,message: error.message});
-//   }
-// };
-// export const localLogin = async (req: Request, res: Response) => {
-//   try {
-//     const { email, password } = req.body;
-//     // Find user
-//     const user = await prisma.user.findUnique({ 
-//       where: { email } 
-//     });
-//     if (!user) {
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
-//     // Check password
-//     const isMatch = await comparePassword(password, user.password || '');
-//     if (!isMatch) {
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
-//     // Generate token
-//     const token = generateAccessToken(user.userId.toString());
-//     res.json({ 
-//       user: { 
-//         id: user.userId, 
-//         username: user.username, 
-//         email: user.email 
-//       }, 
-//       token 
-//     });
-//   } catch (error:any) {
-//     res.status(500).json({ error: 'Login failed',message: error.message });
-//   }
-// };
 const googleSignup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { token } = req.body;
@@ -139,3 +74,14 @@ const getAuthenticatedUser = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getAuthenticatedUser = getAuthenticatedUser;
+// get all user 
+const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const users = yield prisma.user.findMany();
+        res.json(users);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error retrieving users" });
+    }
+});
+exports.getAllUsers = getAllUsers;

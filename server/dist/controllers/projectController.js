@@ -17,9 +17,57 @@ const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
     const decoded = (0, jwt_1.verifyAccessToken)(token);
+    if (!decoded) {
+        res.status(401).json({ message: "Unauthorized: User not authenticated" });
+        return;
+    }
     const userId = decoded === null || decoded === void 0 ? void 0 : decoded.userId;
     try {
-        const projects = yield prisma.project.findMany();
+        const projects = yield prisma.project.findMany({
+            where: {
+                OR: [
+                    {
+                        projectTeams: {
+                            some: {
+                                team: {
+                                    productOwnerUserId: Number(userId),
+                                    user: {
+                                        some: {
+                                            userId: Number(userId),
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    {
+                        projectTeams: {
+                            some: {
+                                team: {
+                                    projectManagerUserId: Number(userId),
+                                },
+                            },
+                        },
+                    },
+                    {
+                        projectTeams: {
+                            some: {
+                                team: {
+                                    productOwnerUserId: Number(userId),
+                                },
+                            },
+                        },
+                    },
+                    {
+                        tasks: {
+                            some: {
+                                authorUserId: Number(userId),
+                            },
+                        },
+                    },
+                ],
+            },
+        });
         res.json(projects);
     }
     catch (error) {

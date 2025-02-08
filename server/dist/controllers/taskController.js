@@ -113,7 +113,14 @@ const getUserTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const decoed = (0, jwt_1.verifyAccessToken)(token);
     const userId = decoed === null || decoed === void 0 ? void 0 : decoed.userId;
     try {
-        const tasks = yield prisma.task.findMany({ where: { authorUserId: Number(userId) } });
+        const tasks = yield prisma.task.findMany({
+            where: {
+                assignedUserId: userId, // Filter by assigned user ID
+            },
+            include: {
+                assignee: true, // Include the assigned user's details
+            },
+        });
         res.status(201).json(tasks);
     }
     catch (error) {

@@ -121,7 +121,14 @@ export const getUserTasks = async (req: Request, res: Response): Promise<void> =
     const userId = decoed?.userId;
 
     try {
-        const tasks = await prisma.task.findMany({ where: { authorUserId: Number(userId)}});
+        const tasks = await prisma.task.findMany({
+            where: {
+              assignedUserId: userId, // Filter by assigned user ID
+            },
+            include: { // Include related data (optional, but often useful)
+              assignee: true, // Include the assigned user's details
+            },
+          });
         res.status(201).json(tasks);
     } catch (error: any) {
         res.status(500).json({ message: "error retrieving user tasks", error: error.message });

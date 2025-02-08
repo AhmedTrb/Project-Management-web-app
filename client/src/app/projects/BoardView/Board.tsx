@@ -19,6 +19,8 @@ import {
 import { useParams } from "next/navigation";
 import { Avatar, AvatarGroup, CircularProgress } from "@mui/material";
 import { format } from "date-fns";
+import { useDispatch } from "react-redux";
+import { setSelectedTask,toggleTaskDetailsModalOpen, toggleTaskDetailsModalClose } from "@/state/globalSlice";
 
 type Props = {
   id: string;
@@ -154,8 +156,12 @@ const TaskCard = ({
   const numberOfAttachments =
     (task.attachments && task.attachments.length) || 0;
   const numberOfPoints = (task.points && task.points) || 0;
-
+  const dispatch = useDispatch();
   const [deleteTask] = useDeleteTaskMutation();
+  const handleOpenTaskDetails = () => {
+    dispatch(setSelectedTask(task));
+    dispatch(toggleTaskDetailsModalOpen());
+  }
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "task",
@@ -212,8 +218,8 @@ const TaskCard = ({
               >
                 Delete
               </div>
-              <div className="text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md p-1 w-full">
-                Edit
+              <div className="text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md p-1 w-full" onClick={handleOpenTaskDetails}>
+                Open
               </div>
             </div>
           )}

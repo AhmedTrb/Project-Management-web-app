@@ -177,7 +177,6 @@ const ProjectItem = ({
   const isActive = pathname === href;
   const [isProjectOptionsOpen, setIsProjectOptionsOpen] = useState(false);
   const [deleteProject] = useDeleteProjectMutation();
-
   return (
     <Link href={href}>
       <div
@@ -214,7 +213,7 @@ const ProjectItem = ({
           <div className=" z-50 absolute  top-7 right-0 w-2/3 p-1 bg-white rounded-md shadow-md flex flex-col gap-y-1">
             <p
               className="text-sm cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-300 hover:bg-opacity-40 rounded-md px-2 py-1 w-full"
-              onClick={() => deleteProject({ projectId })}
+              onClick={()=>deleteProject({projectId: projectId})}
             >
               Delete
             </p>

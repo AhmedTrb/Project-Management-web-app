@@ -8,10 +8,57 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
     const token = req.headers.authorization?.split(' ')[1];
 
     const decoded = verifyAccessToken(token as string);
-    
+    if (!decoded) {
+        res.status(401).json({ message: "Unauthorized: User not authenticated" });
+        return;
+    }
     const userId = decoded?.userId;
     try {
-        const projects = await prisma.project.findMany();
+      const projects = await prisma.project.findMany({
+        where: {
+          OR: [
+            {
+              projectTeams: {
+                some: {
+                  team: {
+                    productOwnerUserId: Number(userId),
+                    user: {
+                      some: {
+                        userId: Number(userId),
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              projectTeams: {
+                some: {
+                  team: {
+                    projectManagerUserId: Number(userId),
+                  },
+                },
+              },
+            },
+            {
+              projectTeams: {
+                some: {
+                  team: {
+                    productOwnerUserId: Number(userId),
+                  },
+                },
+              },
+            },
+            {
+              tasks: {
+                some: {
+                  authorUserId: Number(userId),
+                },
+              },
+            },
+          ],
+        },
+      });
         res.json(projects);
     } catch (error:any) {
         res.status(500).json({ message: "error retrieving projects", error: error.message });
