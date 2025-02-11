@@ -1,30 +1,25 @@
 "use client";
 import React, { useState } from 'react';
 import { Users, Mail, Search, Filter, X } from 'lucide-react';
-import { sampleTeams, sampleUsers, Team, User } from '../types/types';
+import {  Team, TeamMemberRole, User } from '../types/types';
 import { useAppSelector } from '../redux';
 import { useGetUserTeamsQuery } from '@/state/api';
 
 
 const MembersPage = () => {
-  // const users:User[] = sampleUsers;
-  // const teams:Team[] = sampleTeams;
+
   const {data:teams} = useGetUserTeamsQuery();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTeams, setFilteredTeams] = useState<Team[]>(teams || []);
   const currentUser = useAppSelector((state) => state.auth.user);
   
-  const getUserRole = (userId: number, team: Team): string => {
-    if (userId === team.projectManagerUserId) return 'Project Manager';
-    if (userId === team.productOwnerUserId) return 'Product Owner';
-    return 'Team Member';
-  };
+  
 
   const getRoleBadgeColors = (role: string): string => {
     switch (role) {
-      case 'Project Manager':
+      case TeamMemberRole.OWNER:
         return 'bg-primary-600 text-primary-600';
-      case 'Product Owner':
+      case TeamMemberRole.ADMIN:
         return 'bg-orange-500 text-orange-500';
       default:
         return 'bg-gray-400 text-gray-400';
@@ -83,7 +78,7 @@ const MembersPage = () => {
                       </h2>
           
                     </div>
-                    {currentUser?.userId && getUserRole( currentUser.userId,team) === 'Project Manager' && (
+                    {currentUser?.userId && team.members?.some((member) => member.userId === currentUser.userId && member.role === TeamMemberRole.OWNER) && (
                       <span className="px-3 py-1 bg-primary-100 text-secondary-950 rounded-full text-sm">
                         You manage this team
                       </span>
@@ -93,17 +88,16 @@ const MembersPage = () => {
           
                 <div className="p-6">
                   <div className="grid gap-4">
-                    {team.user ? team.user.map((user) => {
-                      const role = getUserRole( user.userId,team);
+                    {team.members ? team.members.map((teamMember) => {
                       return (
                         <div
-                          key={user.userId}
+                          key={teamMember.userId}
                           className="flex items-center space-x-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
                         >
-                          {user.profilePictureUrl ? (
+                          {teamMember.user.profilePictureUrl ? (
                             <img
-                              src={user.profilePictureUrl}
-                              alt={`${user.username}'s profile`}
+                              src={teamMember.user.profilePictureUrl}
+                              alt={`${teamMember.user.username}'s profile`}
                               className="w-12 h-12 rounded-full object-cover" />
                           ) : (
                             <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
@@ -112,24 +106,24 @@ const MembersPage = () => {
                           )}
                           <div className="flex-1 min-w-0">
                             <h3 className="text-sm font-semibold text-gray-900 truncate">
-                              {user.username}
+                              {teamMember.user.username}
                             </h3>
                             <div className="flex items-center mt-1">
                               <Mail className="w-4 h-4 text-gray-400 mr-1" />
                               <a
-                                href={`mailto:${user.email}`}
+                                href={`mailto:${teamMember.user.email}`}
                                 className="text-sm text-gray-600 hover:text-primary-600 transition-colors duration-200 truncate"
                               >
-                                {user.email}
+                                {teamMember.user.email}
                               </a>
                             </div>
                           </div>
                           <span
                             className={`inline-flex items-center px-3 py-1 rounded-full bg-opacity-10 text-xs font-medium ${getRoleBadgeColors(
-                              role
+                              teamMember.role
                             )}`}
                           >
-                            {role}
+                            {teamMember.role}
                           </span>
                         </div>
                       );

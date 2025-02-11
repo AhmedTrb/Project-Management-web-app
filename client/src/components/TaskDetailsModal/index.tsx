@@ -1,5 +1,5 @@
 import { Priority, Task } from "@/app/types/types";
-import { Calendar, ClipboardList, Flag, X } from "lucide-react";
+import { Calendar, ClipboardList, Flag, User, X } from "lucide-react";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { format } from "date-fns";
@@ -8,25 +8,55 @@ import { useAppSelector } from "@/app/redux";
 import { toggleTaskDetailsModalClose } from "@/state/globalSlice";
 import { motion } from "framer-motion";
 import { PriorityComponent } from "../PriorityComponent";
-import { useGetUsersQuery,  useGetUserTeamsQuery } from "@/state/api";
-import Select from 'react-select';
+import {
+  useAssignUserToTaskMutation,
+  useGetTaskAssigneesQuery,
+  useGetUsersQuery,
+  useGetUserTeamsQuery,
+} from "@/state/api";
+import Select from "react-select";
 import { Status } from "../statusComponent";
+import { Avatar, AvatarGroup } from "@mui/material";
 
 type Props = {};
 
 export const TaskDetailsModal = ({}: Props) => {
   const dispatch = useDispatch();
   const task = useAppSelector((state) => state.global.task);
-  const {data:users,isLoading:usersLoading,isError:usersError} = useGetUsersQuery();
-  //const {data:teams,isLoading,isError} = useGetUserTeamsQuery();
+  const {
+    data: users,
+    isLoading: usersLoading,
+    isError: usersError,
+  } = useGetUsersQuery();
+
+  const { data: taskAssignees } = useGetTaskAssigneesQuery({
+    taskId: String(task?.id),
+  });
 
   const isTaskDetailsModalOpen = useAppSelector(
     (state) => state.global.isTaskDetailsModalOpen
   );
+  const [assignTaskToUser,{isSuccess,isError}] = useAssignUserToTaskMutation();
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
+  const handleAssignUsers = (e: React.ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const [selectedUsers,setSelectedUsers] = useState<string[]>([]);
-  
+    if (selectedUsers.length == 0) return ;
+
+    for (const userId of selectedUsers) {
+      try {
+        assignTaskToUser({
+          taskId: String(task?.id),
+          userId: String(userId),
+        });
+      } catch (error: any) {
+        console.log(error.message);
+      }
+    }
+
+  };
+
   const formatDate = (date: Date) => {
     return format(date, "dd/MM/yyyy");
   };
@@ -50,9 +80,9 @@ export const TaskDetailsModal = ({}: Props) => {
           <button
             onClick={() => dispatch(toggleTaskDetailsModalClose())}
             className="text-secondary-900 hover:text-gray-900"
-            >
+          >
             <X size={20} />
-            </button>
+          </button>
         </div>
 
         {/* Task Details */}
@@ -72,12 +102,14 @@ export const TaskDetailsModal = ({}: Props) => {
 
           <div className="flex items-center gap-2 text-secondary-950">
             <ClipboardList size={18} />
-            <span className="font-medium ">Status:</span> <Status status={task?.status as string} />
+            <span className="font-medium ">Status:</span>{" "}
+            <Status status={task?.status as string} />
           </div>
 
           <div className="flex items-center gap-2 text-secondary-950">
             <Flag size={18} />
-            <span className="font-medium">Priority:</span><PriorityComponent priority={task?.priority as Priority} />
+            <span className="font-medium">Priority:</span>
+            <PriorityComponent priority={task?.priority as Priority} />
           </div>
 
           {task?.dueDate && (
@@ -95,30 +127,47 @@ export const TaskDetailsModal = ({}: Props) => {
             Assigned Users
           </h2>
           <div className="flex flex-col w-full gap-5">
-            
+          <div className="flex">
+            <AvatarGroup max={taskAssignees?.length}>
+              {taskAssignees?.map((user) => (
+                <div className="relative"><Avatar key={user.userId} alt={user.username} src={"https://avatar.iran.liara.run/public"} /><X className="absolute text-secondary-950 top-0 right-0 cursor-pointer" size={14} /></div>
+              ))}
+            </AvatarGroup>
+          </div>
+          <form onSubmit={handleAssignUsers} className="flex flex-col gap-2">
+
+          
             <Select
-                isMulti
-                className="basic-multi-select"
-                classNamePrefix="select"
-                placeholder="assign users"
-                value={selectedUsers.map(user => ({ value: user, label: user }))}
-                options={users ? users.map(user => ({ value: user.username, label: user.username })) : []}
-                onChange={(selected) => setSelectedUsers(selected ? selected.map(option => option.value) : [])}
+              isMulti
+              className="basic-multi-select"
+              classNamePrefix="select"
+              placeholder="assign users"
+              value={selectedUsers.map((user) => ({
+                value: user,
+                label: user,
+              }))}
+              options={
+                users
+                  ? users.map((user) => ({
+                      value: user.username,
+                      label: user.username,
+                    }))
+                  : []
+              }
+              onChange={(selected) =>
+                setSelectedUsers(
+                  selected ? selected.map((option) => option.value) : []
+                )
+              }
             />
-            <button className="bg-primary-600  text-white  px-3 py-1 rounded-md">Assign users</button>
+            {isSuccess && <p className="text-green-400 bg-green-400 bg-opacity-10 w-full rounded p-2">Users assigned successfully</p>}
+            
+            <button className="bg-primary-600  text-white  px-3 py-1 rounded-md">
+              Assign users
+            </button>
+            </form>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {/* {task.assignedUserId.map(user => (
-                            <div key={user.userId} className="flex items-center gap-2 bg-gray-100 p-2 rounded-lg">
-                                {user.profilePictureUrl ? (
-                                    <img src={user.profilePictureUrl} alt={user.username} className="w-8 h-8 rounded-full" />
-                                ) : (
-                                    <User size={18} className="text-gray-500" />
-                                )}
-                                <span className="text-gray-700">{user.username}</span>
-                            </div>
-                        ))} */}
-          </div>
+          
         </div>
       </motion.div>
     </div>,

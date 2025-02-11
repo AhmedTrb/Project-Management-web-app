@@ -75,7 +75,7 @@ export const SignIn = ({setLogin}: Props) => {
             Sign In
           </button>
         </form>
-
+        {error && <div className="text-red-500 text-center bg-opacity-10 bg-red-500 w-full py-2 rounded-sm mt-5">{error}</div>}
         <div className="text-center mt-5 text-gray-600">Don't have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(false)}>Sign Up</span> </div>
       </div>
     </div>

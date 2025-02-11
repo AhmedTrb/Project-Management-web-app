@@ -71,6 +71,7 @@ const localSignup = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 username,
                 email,
                 password: hashedPassword,
+                profilePictureUrl: "https://avatar.iran.liara.run/public"
             }
         });
         // Generate JWT

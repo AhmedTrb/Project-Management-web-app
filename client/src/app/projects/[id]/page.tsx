@@ -8,7 +8,7 @@ import NewTaskModal from '@/components/TaskModal';
 import { useParams } from 'next/navigation';
 import Graph from '../GraphView/Graph';
 import ListView from '../ListView/List';
-import { useGetProjectByIdQuery } from '@/state/api';
+import { useGetProjectByIdQuery, useGetProjectTeamMembersQuery, useGetTaskAssigneesQuery } from '@/state/api';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import InviteMemberModal from '@/components/InviteMemberModal';
 
@@ -25,14 +25,14 @@ const ProjectPage = ({}: Props) => {
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isActiveTab, setIsActiveTab] = useState("BOARD");
   const { data: project, isLoading, error } = useGetProjectByIdQuery({projectId: id});
-
+  const {data:projectTeamMembers} = useGetProjectTeamMembersQuery({projectId: id});
   return (
     <div className='flex flex-col justify-start w-full gap-y-6 p-10'>
 
       {/* New Task Modal and Task details Modal */}
       <InviteMemberModal  isOpen={isInviteMemberModalOpen} onClose={()=>setIsInviteMemberModalOpen(false)}/>
       <NewTaskModal projectId={id} isOpen={isNewTaskModalOpen} onClose={()=>setIsNewTaskModalOpen(false)}/>
-      <TaskDetailsModal />
+      
 
       {/* Header */}
       <div className='flex justify-between items-start sm:flex-col md:flex-row border-b border-gray-200 pb-4'>
@@ -48,11 +48,10 @@ const ProjectPage = ({}: Props) => {
             <p className='text-sm text-primary-600'>Invite</p>
           </div>
           {/* project team members avatars*/}
-          <AvatarGroup total={4} spacing="medium">
-            <Avatar alt="Remy Sharp"  sx={{ width: 30, height: 30 }} />
-            <Avatar alt="Travis Howard"  sx={{ width: 30, height: 30 }} />
-            <Avatar alt="Agnes Walker" sx={{ width: 30, height: 30 }} />
-            <Avatar alt="Trevor Henderson"  sx={{ width: 30, height: 30 }} />
+          <AvatarGroup total={projectTeamMembers?.length} spacing="medium">
+            {projectTeamMembers?.map((user) => (
+              <Avatar key={user.userId} src={user.profilePictureUrl} />
+            ))}
           </AvatarGroup>
         </div>
       </div>

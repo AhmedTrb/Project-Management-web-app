@@ -79,6 +79,7 @@ export const localSignup = async (req: Request, res: Response) => {
         username,
         email,
         password: hashedPassword,
+        profilePictureUrl:"https://avatar.iran.liara.run/public"
       }
     });
 

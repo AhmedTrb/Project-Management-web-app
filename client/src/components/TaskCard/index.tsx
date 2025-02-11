@@ -5,6 +5,9 @@ import { Clock } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react'
 import { PriorityComponent } from '../PriorityComponent';
+import { useDispatch } from 'react-redux';
+import { useAppSelector } from '@/app/redux';
+import { setSelectedTask, toggleTaskDetailsModalOpen } from '@/state/globalSlice';
 
 type Props = {
     task: Task
@@ -12,15 +15,15 @@ type Props = {
 
 export const TaskCard = ({task}: Props) => {
     const endDate = task?.dueDate ? new Date(task?.dueDate) : new Date();
+    const dispatch = useDispatch();
 
-    const priorityColorMap = {
-        low: "bg-green-400 bg-opacity-20 text-green-400",
-        medium: "bg-orange-400 bg-opacity-20 text-orange-400", 
-        high: "bg-red-500 bg-opacity-20 text-red-500"
-      };
+    const handleTaskCardClick = () => {
+        dispatch(setSelectedTask(task));
+        dispatch(toggleTaskDetailsModalOpen());
+    }
+    
   return (
-    <Link href={`/projects/${task?.id}`} className='block'>
-    <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out overflow-visible">
+    <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out overflow-visible" onClick={() => handleTaskCardClick}>
     <img
       src="/projectCover.png"
       alt="project"
@@ -55,6 +58,6 @@ export const TaskCard = ({task}: Props) => {
       </div>
     </div>
   </div>
-</Link>
+
   )
 }

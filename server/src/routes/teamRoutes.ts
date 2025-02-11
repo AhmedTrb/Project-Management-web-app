@@ -1,10 +1,12 @@
 import express from "express";
-import { getAllTeams } from "../controllers/teamController";
+import { addTeamMember, getAllTeams, removeTeamMember, updateTeamMemberRole } from "../controllers/teamController";
 import { authMiddleware } from "../middleware/auth";
 
 const router = express.Router();
 
 router.get("/",authMiddleware,getAllTeams );
-router.get("/members/project/:projectId",authMiddleware,getAllTeams );
+router.post("/members",authMiddleware,addTeamMember);
+router.delete("/:teamId/members/:userId",authMiddleware,removeTeamMember);
+router.patch("/:teamId/members/:userId/role",authMiddleware,updateTeamMemberRole);
 
 export default router;

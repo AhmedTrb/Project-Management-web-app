@@ -14,6 +14,7 @@ import {
   useCreateTaskMutation,
   useDeleteTaskMutation,
   useGetProjectTasksQuery,
+  useGetTaskAssigneesQuery,
   useUpdateTaskStatusMutation,
 } from "@/state/api";
 import { useParams } from "next/navigation";
@@ -152,12 +153,16 @@ const TaskCard = ({
   moveTask: (taskId: string, status: TaskStatus) => void;
 }) => {
   const [isTaskOptionsOpen, setIsTaskOptionsOpen] = useState(false);
+
   const numberOfComments = (task.comments && task.comments.length) || 0;
   const numberOfAttachments =
     (task.attachments && task.attachments.length) || 0;
   const numberOfPoints = (task.points && task.points) || 0;
+
   const dispatch = useDispatch();
   const [deleteTask] = useDeleteTaskMutation();
+
+  const {data:taskAssignees} = useGetTaskAssigneesQuery({taskId: String(task.id )});
   const handleOpenTaskDetails = () => {
     dispatch(setSelectedTask(task));
     dispatch(toggleTaskDetailsModalOpen());
@@ -240,22 +245,14 @@ const TaskCard = ({
       </div>
       <div className="flex justify-between items-center">
         <div>
-          <AvatarGroup total={3} max={3} spacing={10}>
-            <Avatar
-              src={task.assignee?.profilePictureUrl}
-              alt={task.assignee?.username}
-              sx={{ width: 25, height: 25 }}
-            />
-            <Avatar
-              src={task.assignee?.profilePictureUrl}
-              alt={task.assignee?.username}
-              sx={{ width: 25, height: 25 }}
-            />
-            <Avatar
-              src={task.assignee?.profilePictureUrl}
-              alt={task.assignee?.username}
-              sx={{ width: 25, height: 25 }}
-            />
+          <AvatarGroup total={taskAssignees?.length} max={3} spacing={10}>
+            {taskAssignees?.map((user) => (
+              <Avatar
+                key={user.userId}
+                src={user.profilePictureUrl}
+                sx={{ width: 20, height: 20 }}
+              />
+            ))}
           </AvatarGroup>
         </div>
         <div className="flex justify-between items-center gap-x-2">

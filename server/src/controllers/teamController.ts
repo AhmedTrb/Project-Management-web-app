@@ -1,233 +1,250 @@
-import {Request, Response } from 'express';
-
-import { PrismaClient} from '@prisma/client';
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 import { verifyAccessToken } from '../utils/jwt';
+import { TeamMemberRole } from '../utils/types';
 const prisma = new PrismaClient();
 
-// Get all teams with their members
+// Get all teams that the user is a member of
 export const getAllTeams = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1];
     const decoded = verifyAccessToken(token as string);
     
-    if (!decoded) return res.status(401).json({ error: 'Unauthorized' });
-    const userId: number = decoded.userId;
+    if (!decoded) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
     
     try {
         const teams = await prisma.team.findMany({
             where: {
-              OR: [
-                {
-                  // User is a member of the team
-                  user: {
-                    some: { userId: Number(userId) },
-                  },
-                },
-                {
-                  // User is the Product Owner of the team
-                  productOwnerUserId: Number(userId),
-                },
-                {
-                  // User is the Project Manager of the team
-                  projectManagerUserId: Number(userId),
-                },
-              ],
+                members: {
+                    some: {
+                        userId: Number(decoded.userId)
+                    }
+                }
             },
             include: {
-              // Include team members with selected fields
-              user: {
-                select: {
-                  userId: true,
-                  username: true,
-                  email: true,
-                  profilePictureUrl: true,
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                userId: true,
+                                username: true,
+                                email: true,
+                                profilePictureUrl: true
+                            }
+                        }
+                    }
                 },
-              },
-            },
-          });
-
+                projects: {
+                    select: {
+                        id: true,
+                        name: true,
+                        status: true
+                    }
+                }
+            }
+        });
+        
         res.status(200).json(teams);
-    } catch (error:any) {
+    } catch (error: any) {
         console.error('Error fetching teams:', error);
-        res.status(500).json({ error: 'Failed to fetch teams'});
+        res.status(500).json({ error: 'Failed to fetch teams' });
     }
 };
-// add a member to a team
+
+// Add a member to a team
 export const addTeamMember = async (req: Request, res: Response) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  const decoded = verifyAccessToken(token as string);
-
-  if (!decoded) return res.status(401).json({ error: 'Unauthorized' });
-
-  const invitedByUserId: number = decoded.userId;
-  const { projectId, userId } = req.body;
-
-  try {
-    const updatedUser = await prisma.user.update({
-      where: { userId: Number(userId) },
-      data: {
-        teamId: Number(projectId),
-      },
-    });
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.error('Error adding team member:', error);
-    res.status(500).json({ error: 'Failed to add team member' });
-  }
-}
-
-// Remove a member from a team
-export const removeTeamMember = async (req: Request, res: Response) => {
-    const { teamId, userId } = req.params;
+    const { teamId, userId, role = TeamMemberRole.MEMBER } = req.body;
+    const token = req.headers.authorization?.split(' ')[1];
+    const decoded = verifyAccessToken(token as string);
+    
+    if (!decoded) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     try {
-        const updatedUser = await prisma.user.update({
-            where: { 
-                userId: parseInt(userId),
-                teamId: parseInt(teamId) // Ensure user is in this team
-            },
-            data: {
-                teamId: null
+        // Check if the requesting user is a team admin
+        const requestingUserMembership = await prisma.teamMember.findFirst({
+            where: {
+                teamId: Number(teamId),
+                userId: Number(decoded.userId),
+                role: TeamMemberRole.OWNER
             }
         });
 
-        res.status(200).json(updatedUser);
-    } catch (error) {
+        if (!requestingUserMembership) {
+            return res.status(403).json({ error: 'Only team admins can add members' });
+        }
+
+        // Check if user is already a member
+        const existingMember = await prisma.teamMember.findFirst({
+            where: {
+                teamId: Number(teamId),
+                userId: Number(userId)
+            }
+        });
+
+        if (existingMember) {
+            return res.status(409).json({ error: 'User is already a team member' });
+        }
+
+        // Add the new team member
+        const newTeamMember = await prisma.teamMember.create({
+            data: {
+                teamId: Number(teamId),
+                userId: Number(userId),
+                role
+            },
+            include: {
+                user: {
+                    select: {
+                        userId: true,
+                        username: true,
+                        email: true,
+                        profilePictureUrl: true
+                    }
+                }
+            }
+        });
+
+        res.status(201).json(newTeamMember);
+    } catch (error: any) {
+        console.error('Error adding team member:', error);
+        res.status(500).json({ error: 'Failed to add team member' });
+    }
+};
+
+// Remove a member from a team
+export const removeTeamMember = async (req: Request, res: Response) => {
+    const { teamId, memberId } = req.params;
+    const token = req.headers.authorization?.split(' ')[1];
+    const decoded = verifyAccessToken(token as string);
+    
+    if (!decoded) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        // Check if the requesting user is a team admin
+        const requestingUserMembership = await prisma.teamMember.findFirst({
+            where: {
+                teamId: Number(teamId),
+                userId: Number(decoded.userId),
+                role: TeamMemberRole.OWNER
+            }
+        });
+
+        if (!requestingUserMembership) {
+            return res.status(403).json({ error: 'Only team admins can remove members' });
+        }
+
+        // Prevent removing the last admin
+        const adminCount = await prisma.teamMember.count({
+            where: {
+                teamId: Number(teamId),
+                role: TeamMemberRole.OWNER
+            }
+        });
+
+        const memberToRemove = await prisma.teamMember.findFirst({
+            where: {
+                teamId: Number(teamId),
+                userId: Number(memberId)
+            }
+        });
+
+        if (adminCount === 1 && memberToRemove?.role === TeamMemberRole.OWNER) {
+            return res.status(400).json({ error: 'Cannot remove the last admin from the team' });
+        }
+
+        // Remove the team member
+        await prisma.teamMember.delete({
+            where: {
+                id: memberToRemove?.id
+            }
+        });
+
+        res.status(200).json({ message: 'Team member removed successfully' });
+    } catch (error: any) {
         console.error('Error removing team member:', error);
         res.status(500).json({ error: 'Failed to remove team member' });
     }
 };
 
-interface TaskAssignmentRequest {
-  taskId: number;
-  userIds: number[];
-}
 
-export const assignUsersToTask = async (req: Request, res: Response) => {
-  const { taskId, userIds }: TaskAssignmentRequest = req.body;
 
-  try {
-    // Validate input
-    if (!taskId || !Array.isArray(userIds)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid request data. Task ID and array of user IDs are required.'
-      });
+// update team member role
+export const updateTeamMemberRole = async (req: Request, res: Response) => {
+    const { teamId, memberId } = req.params;
+    const { newRole } = req.body;
+    const token = req.headers.authorization?.split(' ')[1];
+    const decoded = verifyAccessToken(token as string);
+    
+    if (!decoded) {
+        return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Check if task exists
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-      include: {
-        project: {
-          include: {
-            projectTeams: {
-              include: {
-                team: {
-                  include: {
-                    user: true
-                  }
-                }
-              }
+    try {
+        // Check if the requesting user is a team admin
+        const requestingUserMembership = await prisma.teamMember.findFirst({
+            where: {
+                teamId: Number(teamId),
+                userId: Number(decoded.userId),
+                role: TeamMemberRole.OWNER
             }
-          }
+        });
+
+        if (!requestingUserMembership) {
+            return res.status(403).json({ error: 'Only team admins can update member roles' });
         }
-      }
-    });
 
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: 'Task not found'
-      });
-    }
-
-    // Get all valid team members for this project
-    const validTeamMembers = task.project.projectTeams.flatMap(pt => 
-      pt.team.user.map(user => user.userId)
-    );
-
-    // Validate that all userIds belong to the project's teams
-    const invalidUsers = userIds.filter(userId => !validTeamMembers.includes(userId));
-    if (invalidUsers.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Some users are not members of the project teams',
-        invalidUsers
-      });
-    }
-
-    // Use transaction to ensure all operations succeed or none do
-    const result = await prisma.$transaction(async (tx) => {
-      // Remove existing assignments
-      await tx.taskAssignment.deleteMany({
-        where: { taskId }
-      });
-
-      // Create new assignments
-      const assignments = await Promise.all(
-        userIds.map(userId =>
-          tx.taskAssignment.create({
-            data: {
-              taskId,
-              userId
+        const memberToUpdate = await prisma.teamMember.findFirst({
+            where: {
+                teamId: Number(teamId),
+                userId: Number(memberId)
             }
-          })
-        )
-      );
-
-      // Update the main assignee in the Task table (using the first user if available)
-      if (userIds.length > 0) {
-        await tx.task.update({
-          where: { id: taskId },
-          data: { assignedUserId: userIds[0] }
         });
-      } else {
-        await tx.task.update({
-          where: { id: taskId },
-          data: { assignedUserId: null }
-        });
-      }
 
-      return assignments;
-    });
+        if (!memberToUpdate) {
+            return res.status(404).json({ error: 'Team member not found' });
+        }
 
-    // Send success response
-    return res.status(200).json({
-      success: true,
-      message: 'Users assigned to task successfully',
-      assignments: result
-    });
+        // Prevent removing the last admin
+        if (memberToUpdate.role === TeamMemberRole.OWNER && newRole !== TeamMemberRole.OWNER) {
+            const adminCount = await prisma.teamMember.count({
+                where: {
+                    teamId: Number(teamId),
+                    role: TeamMemberRole.OWNER
+                }
+            });
 
-  } catch (error: any) {
-    console.error('Error in assignUsersToTask:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to assign users to task',
-      error: error.message
-    });
-  }
-};
+            if (adminCount === 1) {
+                return res.status(400).json({ error: 'Cannot remove the last admin from the team' });
+            }
+        }
 
-
-// get project team members
-export const getProjectTeamMembers = async (req: Request, res: Response) => {
-  const { projectId } = req.params;
-  try {
-    const teamMembers = await prisma.user.findMany({
-      where: {
-        team: { // Find users who are in a team
-          projectTeams: { // That is associated with the project
-            some: {
-              projectId: Number(projectId),
+        const updatedMember = await prisma.teamMember.update({
+            where: {
+                id: memberToUpdate.id
             },
-          },
-        },
-      },
-    });
+            data: {
+                role: newRole
+            },
+            include: {
+                user: {
+                    select: {
+                        userId: true,
+                        username: true,
+                        email: true,
+                        profilePictureUrl: true
+                    }
+                }
+            }
+        });
 
-    res.status(200).json(teamMembers);
-  } catch (error) {
-    console.error('Error fetching project team members:', error);
-    res.status(500).json({ error: 'Failed to fetch project team members' });
-  }
+        res.status(200).json(updatedMember);
+    } catch (error: any) {
+        console.error('Error updating team member role:', error);
+        res.status(500).json({ error: 'Failed to update team member role' });
+    }
 };

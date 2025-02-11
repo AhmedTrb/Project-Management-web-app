@@ -109,22 +109,20 @@ const deleteTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.deleteTask = deleteTask;
 const getUserTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
-    const decoed = (0, jwt_1.verifyAccessToken)(token);
-    const userId = decoed === null || decoed === void 0 ? void 0 : decoed.userId;
     try {
-        const tasks = yield prisma.task.findMany({
-            where: {
-                assignedUserId: userId, // Filter by assigned user ID
-            },
-            include: {
-                assignee: true, // Include the assigned user's details
-            },
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+        const decoded = (0, jwt_1.verifyAccessToken)(token);
+        const userId = decoded === null || decoded === void 0 ? void 0 : decoded.userId;
+        const userTaskAssignments = yield prisma.taskAssignment.findMany({
+            where: { userId: Number(userId) },
+            include: { task: true },
         });
-        res.status(201).json(tasks);
+        const tasks = userTaskAssignments.map((assignment) => assignment.task);
+        res.status(200).json(tasks);
     }
     catch (error) {
-        res.status(500).json({ message: "error retrieving user tasks", error: error.message });
+        console.error("Error retrieving user tasks:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
     }
 });
 exports.getUserTasks = getUserTasks;

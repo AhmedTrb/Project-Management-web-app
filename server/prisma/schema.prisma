@@ -15,26 +15,34 @@ model User {
   password          String?          @db.Text
   googleId          String?          
   profilePictureUrl String?
-  teamId            Int?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  teams             TeamMember[]
   attachments       Attachment[]
   comments          Comment[]
   assignedTasks     Task[]           @relation("TaskAssignee")
   authoredTasks     Task[]           @relation("TaskAuthor")
   taskAssignments   TaskAssignment[]
-  team              Team?            @relation(fields: [teamId], references: [id], onDelete: SetNull)
 }
 
 model Team {
   id                   Int           @id @default(autoincrement())
   teamName             String
-  productOwnerUserId   Int?
-  projectManagerUserId Int?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  projectTeams         ProjectTeam[]
-  user                 User[]
+  members              TeamMember[]
+  projects  Project[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+model TeamMember {
+  id        Int   @id @default(autoincrement())
+  userId    Int
+  teamId    Int
+  role      String   
+  joinedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [userId])
+  team      Team     @relation(fields: [teamId], references: [id])
+
+  @@unique([userId, teamId])
 }
 
 model Project {
@@ -46,18 +54,9 @@ model Project {
   status       String        @default("PLANNING")
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  projectTeams ProjectTeam[]
+  teamId       Int
+  team        Team     @relation(fields: [teamId], references: [id])
   tasks        Task[]
-}
-
-model ProjectTeam {
-  id        Int      @id @default(autoincrement())
-  teamId    Int
-  projectId Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
 
 model Task {

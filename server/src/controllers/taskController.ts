@@ -116,24 +116,24 @@ export const deleteTask = async (req:Request, res:Response): Promise<void> => {
 };
 
 export const getUserTasks = async (req: Request, res: Response): Promise<void> => {
-    const token = req.headers.authorization?.split(" ")[1];
-    const decoed = verifyAccessToken(token as string);
-    const userId = decoed?.userId;
+  try {
+      const token = req.headers.authorization?.split(" ")[1];
+      const decoded = verifyAccessToken(token as string);
+      const userId = decoded?.userId;
 
-    try {
-        const tasks = await prisma.task.findMany({
-            where: {
-              assignedUserId: userId, // Filter by assigned user ID
-            },
-            include: { // Include related data (optional, but often useful)
-              assignee: true, // Include the assigned user's details
-            },
-          });
-        res.status(201).json(tasks);
-    } catch (error: any) {
-        res.status(500).json({ message: "error retrieving user tasks", error: error.message });
-    }
-}
+      const userTaskAssignments = await prisma.taskAssignment.findMany({
+        where: { userId: Number(userId) },
+        include: { task: true },
+      });
+
+      const tasks = userTaskAssignments.map((assignment) => assignment.task);
+      res.status(200).json(tasks);
+  } catch (error: any) {
+      console.error("Error retrieving user tasks:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
 export const getTaskById = async (req: Request, res: Response): Promise<void> => {
     const { taskId } = req.params;
     try {

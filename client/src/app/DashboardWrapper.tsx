@@ -2,13 +2,13 @@
   
 import Navbar from '@/components/Navbar/Navbar'
 import Sidebar from '@/components/Sidebar/Sidebar'
-import React, { use, useEffect } from 'react'
-import StoreProvider, { useAppSelector, useAppDispatch } from './redux'
+import React, { useEffect } from 'react'
+import StoreProvider, { useAppSelector } from './redux'
 import ProjectModal from '@/components/ProjectModal'
 import Authentication from './authentication/page'
-import { logOut, selectCurrentToken, setCredentials } from '@/state/authSlice'
-import { useGetAuthenticatedUserQuery } from '@/state/api'
+import {  selectCurrentToken } from '@/state/authSlice'
 import { useRouter } from 'next/navigation'
+import { TaskDetailsModal } from '@/components/TaskDetailsModal'
 
 type Props = {}
 
@@ -21,6 +21,7 @@ function DashboardLayout({children}: {children: React.ReactNode}) {
   useEffect(() => {
     if (!token) {
       router.replace('/authentication')
+      router.refresh()
     }
   }, [token, router])
 
@@ -29,6 +30,7 @@ function DashboardLayout({children}: {children: React.ReactNode}) {
   return (
     <div>
       <ProjectModal />
+      <TaskDetailsModal />
       <div className='flex w-full min-h-screen text-gray-700 bg-white'>
         <Sidebar />
         <div className={`flex flex-col w-full ${isSidebarOpen ? 'ml-60' : 'ml-16'} transition-all duration-300 ease-in-out`}>

@@ -1,4 +1,4 @@
-import { Project, Task, TaskDependency, Team, User } from "@/app/types/types";
+import { Project, Task, TaskAssignment, TaskDependency, Team, TeamMemberRole, User } from "@/app/types/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logOut, setCredentials } from "./authSlice";
 import { RootState } from "@/app/redux";
@@ -70,25 +70,90 @@ export const api = createApi({
   reducerPath: "api",
   tagTypes: ["Projects", "Tasks", "Teams","Users"],
 
+/**
+ * Defines API endpoints for performing various operations related to teams, users, projects, and tasks.
+ * Each endpoint is built using RTK Query's `build` object, which provides methods for creating queries and mutations.
+ * Queries are used to fetch data and can provide or invalidate cache tags, while mutations are used to modify data and invalidate cache tags.
+ */
+
   endpoints: (build) => ({
+    // remove user from task 
+    removeUserFromTask: build.mutation<TaskAssignment, { taskId: string; userId: string }>({
+      query: ({ taskId, userId }) => ({
+        url: `/api/tasks/${taskId}/users/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Tasks"],
+    }),
+    // assign user to task
+    assignUserToTask: build.mutation<TaskAssignment, { taskId: string; userId: string }>({
+      query: ({ taskId, userId }) => ({
+        url: `/api/tasks/assign/task`,
+        method: "POST",
+        body:{taskId,userId}
+      }),
+      invalidatesTags: ["Tasks"],
+    }),
+    // get task assignees
+    getTaskAssignees: build.query<User[], { taskId: string }>({
+      query: ({ taskId }) => ({
+        url: `/api/tasks/${taskId}/assignees`,
+        method: "GET",
+      }),
+      providesTags: (result)=>
+        result
+          ? [...result.map(({ userId }) => ({ type: "Users" as const, userId })), { type: "Users" as const, id: "LIST" }]
+          : [{ type: "Users" as const, id: "LIST" }],
+    }),
+
+    // get project team members
+    getProjectTeamMembers: build.query<User[], { projectId: string }>({
+      query: ({ projectId }) => ({
+        url: `/api/projects/${projectId}/team`,
+        method: "GET",
+      }),
+      providesTags: (result)=>
+        result
+          ? [...result.map(({ userId }) => ({ type: "Users" as const, userId })), { type: "Users" as const, id: "LIST" }]
+          : [{ type: "Users" as const, id: "LIST" }],
+    }),
+    // update team member role
+    updateTeamMemberRole: build.mutation<User, { teamId: string; userId: string; newRole: string }>({
+      query: ({ teamId, userId, newRole }) => ({
+        url: `/api/teams/${teamId}/members/${userId}/role`,
+        method: "PATCH",
+        body: { newRole },
+      }),
+      invalidatesTags: ["Teams"],
+    }),
+    // remove team member 
+    removeTeamMember: build.mutation<User, { teamId: string; userId: string }>({
+      query: ({ teamId, userId }) => ({
+        url: `/api/teams/${teamId}/members/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Teams"],
+    }),
     // get user teams and team members
     getUserTeams: build.query<Team[], void>({
       query: () => ({
         url: "/api/teams",
         method: "GET",
       }),
-      providesTags: ["Teams"],
+      providesTags: (result)=>
+        result
+          ? [...result.map(({ id }) => ({ type: "Teams" as const, id })), { type: "Teams" as const, id: "LIST" }]
+          : [{ type: "Teams" as const, id: "LIST" }],
     }),
     // add team member to project team
-    addTeamMember: build.mutation<User, { projectId: string; userId: string }>({
-      query: ({ projectId, userId }) => ({
-        url: "/api/teams",
-        method: "PUT",
-        body: { projectId, userId },
+    addTeamMember: build.mutation<User, { teamId: string; userId: string,role?: string }>({
+      query: ({ teamId, userId,role }) => ({
+        url: "/api/teams/members",
+        method: "POST",
+        body: { teamId, userId,role },
       }),
       invalidatesTags: ["Teams"],
     }),
-       
     // signup user
     signUpUser: build.mutation<
       { token: string; user: User },
@@ -172,10 +237,10 @@ export const api = createApi({
     // get user tasks
     getUserTasks: build.query<Task[],void >({
       query: () =>({
-        url:'api/tasks/user',
+        url:'/api/tasks/',
         method:'GET',
       }),
-      providesTags: ["Tasks"],
+      providesTags: (result)=> result ? [...result.map(({ id }) => ({ type: "Tasks" as const, id })), { type: "Tasks" as const, id: "LIST" }] : [{ type: "Tasks" as const, id: "LIST" }]
     }),
 
     // Get tasks for a project
@@ -196,7 +261,7 @@ export const api = createApi({
         method: "POST",
         body: task,
       }),
-      invalidatesTags: [{ type: "Tasks" }],
+      invalidatesTags: (result) => result ? [{ type: "Tasks", id: result.projectId }] : [{ type: "Tasks" }],
     }),
     // Update task status for a project
     updateTaskStatus: build.mutation<Task, { taskId: string; status: string }>({
@@ -229,6 +294,13 @@ export const api = createApi({
 });
 
 export const {
+  useGetTaskAssigneesQuery,
+  useAssignUserToTaskMutation,
+  useRemoveUserFromTaskMutation,
+  useGetProjectTeamMembersQuery,
+  useUpdateTeamMemberRoleMutation,
+  useRemoveTeamMemberMutation,
+  useAddTeamMemberMutation,
   useGetUsersQuery,
   useGetUserTeamsQuery,
   useGetUserTasksQuery,
