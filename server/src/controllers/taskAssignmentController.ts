@@ -9,7 +9,7 @@ export const assignUserToTask = async (req: Request, res: Response) =>{
     try {
       // Check if task exists
       const task = await prisma.task.findUnique({
-        where: { id: taskId }
+        where: { id: Number(taskId) }
       });
 
       if (!task) {
@@ -18,7 +18,7 @@ export const assignUserToTask = async (req: Request, res: Response) =>{
 
       // Check if user exists
       const user = await prisma.user.findUnique({
-        where: { userId: userId }
+        where: { userId: Number(userId) }
       });
 
       if (!user) {
@@ -27,8 +27,8 @@ export const assignUserToTask = async (req: Request, res: Response) =>{
       // check if user already assigned 
       const existingAssignment = await prisma.taskAssignment.findFirst({
         where: {
-          taskId: taskId,
-          userId: userId
+          taskId: Number(taskId),
+          userId: Number(userId)
         }
       });
       if (existingAssignment) {
@@ -37,8 +37,8 @@ export const assignUserToTask = async (req: Request, res: Response) =>{
       // Create task assignment
       const assignment = await prisma.taskAssignment.create({
         data: {
-          userId: userId,
-          taskId: taskId
+          userId: Number(userId),
+          taskId: Number(taskId)
         },
         include: {
           user: true,
@@ -48,12 +48,13 @@ export const assignUserToTask = async (req: Request, res: Response) =>{
 
       // Update the task's assignedUserId
       await prisma.task.update({
-        where: { id: taskId },
-        data: { assignedUserId: userId }
+        where: { id: Number(taskId) },
+        data: { assignedUserId: Number(userId) }
       });
 
       res.status(201).json(assignment);
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error: 'Failed to assign task' });
     }
   }

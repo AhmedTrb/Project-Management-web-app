@@ -29,8 +29,8 @@ function DashboardLayout({children}: {children: React.ReactNode}) {
 
   return (
     <div>
-      <ProjectModal />
       <TaskDetailsModal />
+      <ProjectModal />
       <div className='flex w-full min-h-screen text-gray-700 bg-white'>
         <Sidebar />
         <div className={`flex flex-col w-full ${isSidebarOpen ? 'ml-60' : 'ml-16'} transition-all duration-300 ease-in-out`}>

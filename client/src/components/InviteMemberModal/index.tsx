@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 import Modal from "../Modal";
 import Select from "react-select";
-import { useAddTeamMemberMutation, useGetProjectByIdQuery, useGetUsersQuery } from "@/state/api";
+import {
+  useAddTeamMemberMutation,
+  useGetProjectByIdQuery,
+  useGetProjectTeamMembersQuery,
+  useGetUsersQuery,
+} from "@/state/api";
 import { TeamMemberRole, User } from "@/app/types/types";
 import { useAppSelector } from "@/app/redux";
 import { Trash } from "lucide-react";
 import { useParams } from "next/navigation";
-
+import { Avatar } from "@mui/material";
 
 type Props = {
   isOpen: boolean;
@@ -14,23 +19,28 @@ type Props = {
 };
 
 interface userOption {
-  user:User,
-  role:TeamMemberRole
+  user: User;
+  role: TeamMemberRole;
 }
 
 export default function InviteMemberModal({ isOpen, onClose }: Props) {
-  const {id} = useParams();
+  const { id } = useParams();
 
+  const { data: project, isLoading: isProjectLoading } = useGetProjectByIdQuery(
+    { projectId: String(id) }
+  );
+  const { data: projectTeamMembers } = useGetProjectTeamMembersQuery({
+    projectId: String(id),
+  });
 
-  const {data:project, isLoading:isProjectLoading} = useGetProjectByIdQuery({projectId:String(id)});
-  
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
   const { data: users, isLoading, isError } = useGetUsersQuery();
   const [selectedUsers, setSelectedUsers] = useState<userOption[]>([]);
-  const [addTeamMember,{error:teamMemberError}] = useAddTeamMemberMutation();
-  
+  const [addTeamMember, { error: teamMemberError }] =
+    useAddTeamMemberMutation();
+
   const currentUser = useAppSelector((state) => state.auth.user);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +50,7 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
         await addTeamMember({
           userId: String(userOption.user.userId),
           teamId: String(project?.teamId),
-          role: userOption.role
+          role: userOption.role,
         });
 
         if (teamMemberError) {
@@ -52,14 +62,21 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
         setTimeout(() => setError(""), 5000);
         setError("");
       }
-      
     }
     setSuccess(true);
     setSelectedUsers([]);
     setTimeout(() => setSuccess(false), 5000);
-
   };
-
+  const getRoleBadgeColors = (role: string): string => {
+    switch (role) {
+      case TeamMemberRole.OWNER:
+        return "bg-primary-600 text-primary-600 bg-opacity-20";
+      case TeamMemberRole.ADMIN:
+        return "bg-orange-500 text-orange-500 bg-opacity-20";
+      default:
+        return "bg-gray-400 text-gray-400 bg-opacity-20";
+    }
+  };
   const inputClasses = "w-full rounded border border-gray-300 p-2 shadow-sm";
 
   return (
@@ -77,31 +94,56 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
               label: user.user.username,
             }))}
             options={
-              users ? users.filter((user) => user.userId !== currentUser?.userId).map((user) => ({ value: user, label: user.username })) : []
+              users
+                ? users
+                    .filter(
+                      (user) =>
+                        user.userId !== currentUser?.userId &&
+                        !projectTeamMembers?.some(
+                          (teamMember) => teamMember.userId === user.userId
+                        )
+                    )
+                    .map((user) => ({ value: user, label: user.username }))
+                : []
             }
             onChange={(selected) =>
               setSelectedUsers(
-                selected ? selected.map((option) => ({
-                  user: option.value,
-                  role: TeamMemberRole.OWNER
-                })) : []
+                selected
+                  ? selected.map((option) => ({
+                      user: option.value,
+                      role: TeamMemberRole.OWNER,
+                    }))
+                  : []
               )
             }
           />
 
           {selectedUsers.length > 0 &&
             selectedUsers.map((userOption) => (
-              <div key={userOption.user.userId} className="flex justify-between items-center gap-2">
+              <div
+                key={userOption.user.userId}
+                className="flex justify-between items-center gap-2"
+              >
                 <div className="flex gap-2  w-full justify-between items-center">
-                  <div className="text-sm text-secondary-950">{userOption.user.username}</div>
+                  <div className="text-sm text-secondary-950">
+                    {userOption.user.username}
+                  </div>
                   <select
                     className="block w-28 rounded border border-gray-300 px-3 py-1 "
-                    value={selectedUsers.find((u) => u.user.userId === userOption.user.userId)?.role}
-                    onChange={(e) => setSelectedUsers(selectedUsers.map(u => 
-                      u.user.userId === userOption.user.userId 
-                      ? { ...u, role: e.target.value as TeamMemberRole }
-                      : u
-                    ))}
+                    value={
+                      selectedUsers.find(
+                        (u) => u.user.userId === userOption.user.userId
+                      )?.role
+                    }
+                    onChange={(e) =>
+                      setSelectedUsers(
+                        selectedUsers.map((u) =>
+                          u.user.userId === userOption.user.userId
+                            ? { ...u, role: e.target.value as TeamMemberRole }
+                            : u
+                        )
+                      )
+                    }
                   >
                     {Object.values(TeamMemberRole).map((role) => (
                       <option key={role} value={role} className="text-sm ">
@@ -114,15 +156,56 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
                   type="button"
                   onClick={() =>
                     setSelectedUsers(
-                      selectedUsers.filter((u) => u.user.userId !== userOption.user.userId)
+                      selectedUsers.filter(
+                        (u) => u.user.userId !== userOption.user.userId
+                      )
                     )
                   }
                   className="text-red-600 bg-opacity-10 bg-red-500 px-2 py-1 rounded flex justify-center items-center gap-2"
                 >
-                <Trash className="w-4 h-4 text-red-600" />
+                  <Trash className="w-4 h-4 text-red-600" />
                 </button>
               </div>
             ))}
+
+          {/* Team members */}
+          <div className="flex flex-col gap-y-2">
+            <div className="text-sms text-secondary-950">Team Members</div>
+            <div className="flex flex-col gap-y-2">
+              {projectTeamMembers &&
+                projectTeamMembers?.map((teamMember) => (
+                  <div
+                    key={teamMember.user.userId}
+                    className="flex items-center justify-between w-1/2"
+                  >
+                    <div className="flex items-center gap-x-4">
+                    <Avatar
+                      key={teamMember.user.userId}
+                      src={teamMember.user.profilePictureUrl}
+                      alt={teamMember.user.username}
+                      className="w-4 h-4"
+                    />
+
+                    <div className="text-sm text-secondary-950">
+                      {teamMember.user.username}
+                    </div>
+                    </div>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full bg-opacity-10 text-xs font-medium ${getRoleBadgeColors(
+                        teamMember.role
+                      )}`}
+                    >
+                      {teamMember.role}
+                    </span>
+                  </div>
+                ))}
+              {!projectTeamMembers && (
+                <div className="text-sm text-secondary-950">
+                  No team members
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Error handling  */}
           {error && (
@@ -139,7 +222,7 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
           <button
             type="submit"
             className={`w-full rounded text-lg bg-primary-600 text-white p-2 shadow-sm ${
-              isLoading ? "opacity-40 cursor-not-allowed" : ""
+              isLoading && selectedUsers.length === 0 ? "opacity-40 cursor-not-allowed" : ""
             }`}
             disabled={isLoading || selectedUsers.length === 0}
           >

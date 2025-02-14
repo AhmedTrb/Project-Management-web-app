@@ -1,3 +1,4 @@
+"use client";
 import { Priority, Task } from "@/app/types/types";
 import { Calendar, ClipboardList, Flag, User, X } from "lucide-react";
 import React, { useState } from "react";
@@ -19,15 +20,15 @@ import { Status } from "../statusComponent";
 import { Avatar, AvatarGroup } from "@mui/material";
 
 type Props = {};
-
+interface selectedUserOptionValue {
+  userId: string;
+  label: string;
+}
 export const TaskDetailsModal = ({}: Props) => {
+  const [error,setError] = useState("");
   const dispatch = useDispatch();
   const task = useAppSelector((state) => state.global.task);
-  const {
-    data: users,
-    isLoading: usersLoading,
-    isError: usersError,
-  } = useGetUsersQuery();
+  const {data: users,} = useGetUsersQuery();
 
   const { data: taskAssignees } = useGetTaskAssigneesQuery({
     taskId: String(task?.id),
@@ -37,21 +38,23 @@ export const TaskDetailsModal = ({}: Props) => {
     (state) => state.global.isTaskDetailsModalOpen
   );
   const [assignTaskToUser,{isSuccess,isError}] = useAssignUserToTaskMutation();
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<selectedUserOptionValue[]>([]);
 
   const handleAssignUsers = (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (selectedUsers.length == 0) return ;
 
-    for (const userId of selectedUsers) {
+    for (const userOptionValue of selectedUsers) {
       try {
         assignTaskToUser({
           taskId: String(task?.id),
-          userId: String(userId),
-        });
+          userId: String(userOptionValue.userId),
+        }).unwrap();
+        
       } catch (error: any) {
-        console.log(error.message);
+        const errorMessage  = error?.data?.error || "Error assigning task to user";
+        setError(errorMessage);
       }
     }
 
@@ -61,7 +64,8 @@ export const TaskDetailsModal = ({}: Props) => {
     return format(date, "dd/MM/yyyy");
   };
 
-  if (!isTaskDetailsModalOpen) return null;
+  if(!isTaskDetailsModalOpen) return null;
+  
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-50 flex h-full w-full items-center justify-end overflow-y-auto bg-black bg-opacity-10 ">
@@ -70,7 +74,7 @@ export const TaskDetailsModal = ({}: Props) => {
         animate={{ x: "0%", opacity: 1 }} // Slide in to view
         exit={{ x: "100%", opacity: 0 }} // Slide out when closing
         transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
-        className="w-1/4 max-w-2xl h-full rounded-tl-lg rounded-bl-lg bg-white p-4 shadow-lg flex flex-col justify-start gap-4 overflow-y-auto"
+        className="md:w-1/3 sm:w-1/2  w-1/3 h-full rounded-tl-lg rounded-bl-lg bg-white p-4 shadow-lg flex flex-col justify-start gap-4 overflow-y-auto"
       >
         {/* Header */}
         <div className="flex justify-between items-center border-b pb-2">
@@ -129,8 +133,8 @@ export const TaskDetailsModal = ({}: Props) => {
           <div className="flex flex-col w-full gap-5">
           <div className="flex">
             <AvatarGroup max={taskAssignees?.length}>
-              {taskAssignees?.map((user) => (
-                <div className="relative"><Avatar key={user.userId} alt={user.username} src={"https://avatar.iran.liara.run/public"} /><X className="absolute text-secondary-950 top-0 right-0 cursor-pointer" size={14} /></div>
+              {taskAssignees?.map((teamMember) => (
+                <div className="relative" key={teamMember.userId}><Avatar alt={teamMember.user.username} src={"https://avatar.iran.liara.run/public"} /><X className="absolute text-secondary-950 top-0 right-0 cursor-pointer" size={14} /></div>
               ))}
             </AvatarGroup>
           </div>
@@ -144,12 +148,15 @@ export const TaskDetailsModal = ({}: Props) => {
               placeholder="assign users"
               value={selectedUsers.map((user) => ({
                 value: user,
-                label: user,
+                label: user.label,
               }))}
               options={
                 users
-                  ? users.map((user) => ({
-                      value: user.username,
+                  ? users.filter((user) => !taskAssignees?.some(assignee => assignee.userId === user.userId)).map((user) => ({
+                      value: {
+                        userId: String(user.userId),
+                        label: user.username,
+                      } as selectedUserOptionValue,
                       label: user.username,
                     }))
                   : []
@@ -161,7 +168,7 @@ export const TaskDetailsModal = ({}: Props) => {
               }
             />
             {isSuccess && <p className="text-green-400 bg-green-400 bg-opacity-10 w-full rounded p-2">Users assigned successfully</p>}
-            
+            {error && <p className="text-red-400 bg-red-400 bg-opacity-10 w-full rounded p-2">{error}</p>}
             <button className="bg-primary-600  text-white  px-3 py-1 rounded-md">
               Assign users
             </button>

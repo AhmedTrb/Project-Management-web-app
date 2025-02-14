@@ -34,6 +34,7 @@ export const globalSlice = createSlice({
     },
     toggleTaskDetailsModalClose: (state) => {
       state.isTaskDetailsModalOpen = false;
+      state.task = null;
     },
     setSelectedTask: (state, action) => {
       state.task = action.payload;
