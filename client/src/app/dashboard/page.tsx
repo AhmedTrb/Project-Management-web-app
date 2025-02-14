@@ -115,12 +115,7 @@ function HomePage({}: Props) {
       </div>
       <div className="flex gap-x-4 justify-start items-start gap-y-5 w-full overflow-x-hidden overflow-y-scroll">
         {tasks
-          ?.sort(
-            (t1, t2) =>
-              new Date(t1.dueDate ?? Infinity).getTime() -
-              new Date(t2.dueDate ?? Infinity).getTime()
-          )
-          .map((task) => (
+          ?.map((task) => (
             <TaskCard key={task.id} task={task} />
           ))}
       </div>
