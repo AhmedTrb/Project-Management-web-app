@@ -61,9 +61,13 @@ server/
 ```bash
 # Clone the repository
 git clone https://github.com/AhmedTrb/Project-Management-web-app.git
+```
+Install npm packages :
+
+```bash
 cd project-management-platform
 ```
-**Install npm packages :**
+**Install dependencies**
 ```bash
 cd client
 npm install
@@ -87,8 +91,8 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 PORT=8000
 DATABASE_URL=postgresql://postgres:<Database password>@localhost:5432/<db name>?schema=public
 
-JWT_ACCESS_TOKEN_SECRET=
-JWT_REFRESH_TOKEN_SECRET=
+JWT_ACCESS_TOKEN_SECRET=1234567890
+JWT_REFRESH_TOKEN_SECRET=0987654321
 
 STATUS=development
 
