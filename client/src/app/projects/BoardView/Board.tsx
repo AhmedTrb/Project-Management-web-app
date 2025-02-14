@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { Priority, Task, TaskStatus } from "../../types/types";
+import { Task, TaskStatus } from "../../types/types";
 import {
   Calendar,
   Ellipsis,
@@ -17,7 +17,6 @@ import {
   useGetTaskAssigneesQuery,
   useUpdateTaskStatusMutation,
 } from "@/state/api";
-import { useParams } from "next/navigation";
 import { Avatar, AvatarGroup, CircularProgress } from "@mui/material";
 import { format } from "date-fns";
 import { useDispatch } from "react-redux";

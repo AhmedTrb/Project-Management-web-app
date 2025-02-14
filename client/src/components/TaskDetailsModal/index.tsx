@@ -1,6 +1,6 @@
 "use client";
-import { Priority, Task } from "@/app/types/types";
-import { Calendar, ClipboardList, Flag, User, X } from "lucide-react";
+import { Priority } from "@/app/types/types";
+import { Calendar, ClipboardList, Flag, X } from "lucide-react";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { format } from "date-fns";
@@ -13,7 +13,6 @@ import {
   useAssignUserToTaskMutation,
   useGetTaskAssigneesQuery,
   useGetUsersQuery,
-  useGetUserTeamsQuery,
 } from "@/state/api";
 import Select from "react-select";
 import { Status } from "../statusComponent";

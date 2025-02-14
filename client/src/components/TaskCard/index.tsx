@@ -2,12 +2,11 @@ import { Priority, Task } from '@/app/types/types';
 import { Avatar, AvatarGroup } from '@mui/material';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
-import Link from 'next/link';
 import React from 'react'
 import { PriorityComponent } from '../PriorityComponent';
 import { useDispatch } from 'react-redux';
-import { useAppSelector } from '@/app/redux';
 import { setSelectedTask, toggleTaskDetailsModalOpen } from '@/state/globalSlice';
+import Image from 'next/image';
 
 type Props = {
     task: Task
@@ -24,7 +23,7 @@ export const TaskCard = ({task}: Props) => {
     
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out overflow-visible" onClick={() => handleTaskCardClick}>
-    <img
+    <Image
       src="/projectCover.png"
       alt="project"
       className="w-full h-32 rounded-lg object-cover"

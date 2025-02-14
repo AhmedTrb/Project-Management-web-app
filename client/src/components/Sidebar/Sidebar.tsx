@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { assets } from "@/app/assets/assets";
 import {
-  ChevronsLeft,
   ChevronsRight,
   Ellipsis,
   LayoutDashboard,

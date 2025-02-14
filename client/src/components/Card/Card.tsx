@@ -1,6 +1,5 @@
 "use client"
 import { Project } from '@/app/types/types';
-import { useGetProjectByIdQuery, } from '@/state/api';
 import { Avatar, AvatarGroup } from '@mui/material';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
@@ -13,12 +12,6 @@ type Props = {
 export default function Card({project}: Props) {
 
     const endDate = project?.endDate ? new Date(project?.endDate) : new Date();
-
-    const priorityColorMap = {
-        low: "bg-green-400 bg-opacity-20 text-green-400",
-        medium: "bg-orange-400 bg-opacity-20 text-orange-400", 
-        high: "bg-red-500 bg-opacity-20 text-red-500"
-      };
 
   return (
     <div className='bg-white rounded-lg px-3 py-6 shadow-lg felx flex-col justify-start items-center gap-y-8 w-1/4'>

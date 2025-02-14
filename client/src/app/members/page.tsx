@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import { Users, Mail, Search, Filter, X } from 'lucide-react';
-import {  Team, TeamMemberRole, User } from '../types/types';
+import { Users, Mail, Search, } from 'lucide-react';
+import {  Team, TeamMemberRole} from '../types/types';
 import { useAppSelector } from '../redux';
 import { useGetUserTeamsQuery } from '@/state/api';
 

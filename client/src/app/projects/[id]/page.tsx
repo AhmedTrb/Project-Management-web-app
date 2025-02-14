@@ -1,5 +1,5 @@
 'use client'
-import { List, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
@@ -9,7 +9,6 @@ import { useParams } from 'next/navigation';
 import Graph from '../GraphView/Graph';
 import ListView from '../ListView/List';
 import { useGetProjectByIdQuery, useGetProjectTeamMembersQuery, useGetTaskAssigneesQuery } from '@/state/api';
-import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import InviteMemberModal from '@/components/InviteMemberModal';
 
 

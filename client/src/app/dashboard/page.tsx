@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { useGetProjectsQuery, useGetUserTasksQuery } from "@/state/api";
-import { projectStatus, Task, TaskStatus, Project } from "../types/types";
+import {  Task, Project } from "../types/types";
 import { ActivityChart } from "./ActivityChart/chart-line-default";
 import { Calendar } from "@/components/ui/calendar";
 import ProjectCard from "@/components/ProjectCard";

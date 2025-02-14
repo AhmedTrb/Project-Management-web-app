@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useSignUpUserMutation } from "@/state/api";
 import { useAppDispatch } from "@/app/redux";
 import { setCredentials } from "@/state/authSlice";
-import { User } from "@/app/types/types";
 import { useRouter } from "next/navigation";
 
 type Props = {

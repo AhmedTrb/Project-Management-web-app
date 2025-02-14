@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Modal from "../Modal";
-import { Priority, projectStatus, Task, TaskDependency, TaskStatus } from "@/app/types/types";
-import { useCreateTaskMutation, useGetProjectTasksQuery, useGetProjectByIdQuery } from "@/state/api";
-import { formatISO } from "date-fns";
+import { Priority,Task, TaskStatus } from "@/app/types/types";
+import { useCreateTaskMutation, useGetProjectTasksQuery } from "@/state/api";
+
 import Select from 'react-select';
 
 
@@ -64,7 +64,7 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
       const formattedDueDate = new Date(dueDate);
 
       // Prepare dependencies (list of prerequisite task IDs)
-      const taskDependencies = dependencies.map((dependency) => parseInt(dependency));
+      const taskDependencies= dependencies.map((dependency) => parseInt(dependency));
       // Prepare the task object
       const newTask: Partial<Task> = {
         title,

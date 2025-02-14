@@ -1,4 +1,3 @@
-import { Task } from '@/app/types/types'
 import React from 'react'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 import { useGetProjectTasksQuery } from '@/state/api';

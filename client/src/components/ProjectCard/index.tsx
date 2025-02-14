@@ -1,6 +1,5 @@
 "use client"
 import { Project } from '@/app/types/types';
-import { useGetProjectByIdQuery, } from '@/state/api';
 import { Avatar, AvatarGroup } from '@mui/material';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
