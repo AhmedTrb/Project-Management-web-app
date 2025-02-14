@@ -37,7 +37,7 @@ export default function Board({ id, setIsNewTaskModalOpen }: Props) {
     updateTaskStatus({ taskId, status });
   };
 
-  if (isLoading) return <CircularProgress />;
+  if (isLoading) return <div className="flex justify-center items-center w-full h-48"><CircularProgress /></div>;
   if (error) return <div>Error</div>;
   return (
     <DndProvider backend={HTML5Backend}>
@@ -163,6 +163,7 @@ const TaskCard = ({
   const [deleteTask] = useDeleteTaskMutation();
 
   const {data:taskAssignees} = useGetTaskAssigneesQuery({taskId: String(task.id )});
+  console.log(taskAssignees);
   const handleOpenTaskDetails = () => {
     dispatch(setSelectedTask(task));
     dispatch(toggleTaskDetailsModalOpen());
@@ -246,10 +247,10 @@ const TaskCard = ({
       <div className="flex justify-between items-center">
         <div>
           <AvatarGroup total={taskAssignees?.length} max={3} spacing={10}>
-            {taskAssignees?.map((user) => (
+            {taskAssignees?.map((teamMember) => (
               <Avatar
-                key={user.userId}
-                src={user.profilePictureUrl}
+                key={teamMember.userId}
+                src={teamMember.user.profilePictureUrl}
                 sx={{ width: 20, height: 20 }}
               />
             ))}

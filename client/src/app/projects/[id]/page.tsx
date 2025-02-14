@@ -35,11 +35,11 @@ const ProjectPage = ({}: Props) => {
       
 
       {/* Header */}
-      <div className='flex justify-between items-start sm:flex-col md:flex-row border-b border-gray-200 pb-4'>
+      <div className='flex flex-col lg:flex-row lg:justify-between lg:items-center md:flex-col md:items-start sm:items-start sm:flex-col items-start w-full gap-y-6 border-b border-gray-200 pb-4'>
         
-          <h1 className='text-3xl font-semibold text-secondary-950'>{project?.name}</h1>
+        <div><h1 className='text-3xl font-semibold text-secondary-950'>{project?.name}</h1></div>
         
-        <div className='flex justify-end items-center gap-x-4 w-1/2 sm:w-full   '>
+        <div className='flex justify-end items-center gap-x-4'>
           {/* Invite button */}
           <div className="flex items-center gap-x-2">
             <button className='bg-primary-600 bg-opacity-40 text-white p-1 rounded-md' onClick={() => setIsInviteMemberModalOpen(true)}>
@@ -49,8 +49,8 @@ const ProjectPage = ({}: Props) => {
           </div>
           {/* project team members avatars*/}
           <AvatarGroup total={projectTeamMembers?.length} spacing="medium">
-            {projectTeamMembers?.map((user) => (
-              <Avatar key={user.userId} src={user.profilePictureUrl} />
+            {projectTeamMembers?.map((teamMember) => (
+              <Avatar key={teamMember.userId} src={teamMember.user.profilePictureUrl} />
             ))}
           </AvatarGroup>
         </div>

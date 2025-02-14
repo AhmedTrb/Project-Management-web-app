@@ -1,4 +1,4 @@
-import { Project, Task, TaskAssignment, TaskDependency, Team, TeamMemberRole, User } from "@/app/types/types";
+import { Project, Task, TaskAssignment, TaskDependency, Team, TeamMember, TeamMemberRole, User } from "@/app/types/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logOut, setCredentials } from "./authSlice";
 import { RootState } from "@/app/redux";
@@ -95,7 +95,7 @@ export const api = createApi({
       invalidatesTags: ["Tasks"],
     }),
     // get task assignees
-    getTaskAssignees: build.query<User[], { taskId: string }>({
+    getTaskAssignees: build.query<TeamMember[], { taskId: string }>({
       query: ({ taskId }) => ({
         url: `/api/tasks/${taskId}/assignees`,
         method: "GET",
@@ -107,7 +107,7 @@ export const api = createApi({
     }),
 
     // get project team members
-    getProjectTeamMembers: build.query<User[], { projectId: string }>({
+    getProjectTeamMembers: build.query<TeamMember[], { projectId: string }>({
       query: ({ projectId }) => ({
         url: `/api/projects/${projectId}/team`,
         method: "GET",

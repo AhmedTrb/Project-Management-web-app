@@ -17,14 +17,14 @@ const assignUserToTask = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         // Check if task exists
         const task = yield prisma.task.findUnique({
-            where: { id: taskId }
+            where: { id: Number(taskId) }
         });
         if (!task) {
             return res.status(404).json({ error: 'Task not found' });
         }
         // Check if user exists
         const user = yield prisma.user.findUnique({
-            where: { userId: userId }
+            where: { userId: Number(userId) }
         });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -32,8 +32,8 @@ const assignUserToTask = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // check if user already assigned 
         const existingAssignment = yield prisma.taskAssignment.findFirst({
             where: {
-                taskId: taskId,
-                userId: userId
+                taskId: Number(taskId),
+                userId: Number(userId)
             }
         });
         if (existingAssignment) {
@@ -42,8 +42,8 @@ const assignUserToTask = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // Create task assignment
         const assignment = yield prisma.taskAssignment.create({
             data: {
-                userId: userId,
-                taskId: taskId
+                userId: Number(userId),
+                taskId: Number(taskId)
             },
             include: {
                 user: true,
@@ -52,12 +52,13 @@ const assignUserToTask = (req, res) => __awaiter(void 0, void 0, void 0, functio
         });
         // Update the task's assignedUserId
         yield prisma.task.update({
-            where: { id: taskId },
-            data: { assignedUserId: userId }
+            where: { id: Number(taskId) },
+            data: { assignedUserId: Number(userId) }
         });
         res.status(201).json(assignment);
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'Failed to assign task' });
     }
 });

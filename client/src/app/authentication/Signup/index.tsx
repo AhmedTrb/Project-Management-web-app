@@ -41,9 +41,12 @@ export const Signup = ({setLogin}:Props) => {
       try {
         const result = await signupUser({ username, email, password }).unwrap();
         dispatch(setCredentials({ user: result.user, token: result.token }));
+        
         router.push("/dashboard");
+        router.refresh();
       } catch (error: any) {
-        setError(error?.data?.message || "Signup failed. Please try again.");
+        const errorMessage = error?.data?.error || error?.error || "Signup failed. Please try again.";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -126,7 +129,8 @@ export const Signup = ({setLogin}:Props) => {
               Sign Up
             </button>
           </form>
-          <div className="text-center mt-5 text-gray-600">Already have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(true)}>Sign ip</span> </div>
+          {error && <p className="mt-4 text-md py-1 rounded bg-red-500 bg-opacity-20 text-center text-red-500">{error}</p>}
+          <div className="text-center mt-5 text-gray-600">Already have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(true)}>Sign up</span> </div>
         </div>
       </div>
     );

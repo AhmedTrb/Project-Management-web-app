@@ -29,11 +29,15 @@ export const SignIn = ({setLogin}: Props) => {
     try {
       const result = await login({ email, password }).unwrap();
       dispatch(setCredentials({ user: result.user, token: result.token }));
-
+  
       console.log(result);
       router.push("/dashboard");
     } catch (error: any) {
-      setError(error?.data?.message || "Login failed. Please try again.");
+      console.error("Login error:", error);
+      
+      // Extracting the error message
+      const errorMessage = error?.data?.error  ;
+      setError(errorMessage);
     } 
   };
 
