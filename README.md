@@ -15,10 +15,10 @@ This project was inspired by a university course on Graph Theory, where I explor
 
 *** 
 
-![image](https://github.com/user-attachments/assets/9bea527e-4672-427b-b1a6-728c58dc1e7d)
+![image](https://github.com/user-attachments/assets/cf75824e-a7da-4e8a-ad49-f267d6574099)
 
 
-[VIDEO DEMO](https://drive.google.com/file/d/1psJ0-kM9dSsjbwhorV3Kbu-Qhh6OpEc1/view?usp=sharing)
+
 *** 
 ### Overview : 
 Prerequisites :
@@ -127,4 +127,16 @@ FRONTEND_URL=http://localhost:3000
     npm run dev
 ```
 
+### Screenshots : 
+
+#### Home Page 
+![image](https://github.com/user-attachments/assets/9d3e45c9-5b99-40eb-ab06-5f14a3ddaab4)
+
+#### Project Page (Board view) :
+![image](https://github.com/user-attachments/assets/2ea65bdd-a1d1-469e-a9ca-e54d4d25f196)
+
+#### Project Page (Graph view) :
+![image](https://github.com/user-attachments/assets/cf75824e-a7da-4e8a-ad49-f267d6574099)
+#### Members Page :
+![image](https://github.com/user-attachments/assets/f957f838-4aba-4e62-87b2-6b699bada2e5)
 
