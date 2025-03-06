@@ -106,17 +106,18 @@ FRONTEND_URL=http://localhost:3000
 
 ```
 ### 4. Database setup :
+**For local database:**
 - install PgAdmin 
 - create a new postgres database 
 - save database name and password
 - update DATABSE_URL in .env file in server directory
 - create database with the commands : 
 
+- Or use Neon as a database provider
     ```bash 
     cd server
     npx prisma migrate dev --name init
     ```
-
 ### 5. Running the project :
 ```bash
     cd client
