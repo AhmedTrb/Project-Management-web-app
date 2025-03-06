@@ -76,7 +76,7 @@ cd project-management-platform
 **Install dependencies**
 ```bash
 cd client
-npm install
+npm install --legacy-peer-deps
 ```
 ```bash
 cd server
