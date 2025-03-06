@@ -1,5 +1,5 @@
 "use client";
-import { Priority } from "@/app/types/types";
+import { ApiError, Priority } from "@/app/types/types";
 import { Calendar, ClipboardList, Flag, X } from "lucide-react";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
@@ -18,12 +18,11 @@ import Select from "react-select";
 import { Status } from "../statusComponent";
 import { Avatar, AvatarGroup } from "@mui/material";
 
-type Props = {};
 interface selectedUserOptionValue {
   userId: string;
   label: string;
 }
-export const TaskDetailsModal = ({}: Props) => {
+export const TaskDetailsModal = () => {
   const [error,setError] = useState("");
   const dispatch = useDispatch();
   const task = useAppSelector((state) => state.global.task);
@@ -36,7 +35,7 @@ export const TaskDetailsModal = ({}: Props) => {
   const isTaskDetailsModalOpen = useAppSelector(
     (state) => state.global.isTaskDetailsModalOpen
   );
-  const [assignTaskToUser,{isSuccess,isError}] = useAssignUserToTaskMutation();
+  const [assignTaskToUser,{isSuccess}] = useAssignUserToTaskMutation();
   const [selectedUsers, setSelectedUsers] = useState<selectedUserOptionValue[]>([]);
 
   const handleAssignUsers = (e: React.ChangeEvent<HTMLFormElement>) => {
@@ -51,8 +50,9 @@ export const TaskDetailsModal = ({}: Props) => {
           userId: String(userOptionValue.userId),
         }).unwrap();
         
-      } catch (error: any) {
-        const errorMessage  = error?.data?.error || "Error assigning task to user";
+      } catch (error: unknown) {
+        const err = error as ApiError;
+        const errorMessage  = err?.data?.error || "Error assigning task to user";
         setError(errorMessage);
       }
     }
@@ -95,11 +95,7 @@ export const TaskDetailsModal = ({}: Props) => {
               {task?.title} :
             </h2>
             <p className="text-gray-800 text-md font-normal">
-              {task?.description} Lorem ipsum dolor sit amet consectetur
-              adipisicing elit. Nam veniam molestiae facilis necessitatibus!
-              Adipisci nisi nesciunt, dicta eaque doloribus, veniam eius
-              consequuntur nostrum tenetur deserunt soluta eum, impedit optio
-              rerum.
+              {task?.description} 
             </p>
           </div>
 

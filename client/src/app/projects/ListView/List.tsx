@@ -10,7 +10,7 @@ type Props = {
 }
 
 export default function ListView({id}: Props) {
-  const { data: tasks, isLoading, error } = useGetProjectTasksQuery({ projectId: id });
+  const { data: tasks } = useGetProjectTasksQuery({ projectId: id });
 
   const priorityColorMap = {
     low: "bg-green-400 bg-opacity-20 text-green-400",

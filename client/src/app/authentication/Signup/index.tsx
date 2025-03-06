@@ -4,10 +4,12 @@ import { useSignUpUserMutation } from "@/state/api";
 import { useAppDispatch } from "@/app/redux";
 import { setCredentials } from "@/state/authSlice";
 import { useRouter } from "next/navigation";
+import { ApiError } from "@/app/types/types";
 
 type Props = {
   setLogin:React.Dispatch<React.SetStateAction<boolean>>;
 };
+
 export const Signup = ({setLogin}:Props) => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -18,7 +20,7 @@ export const Signup = ({setLogin}:Props) => {
     const router = useRouter();
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [signupUser, { isLoading ,error:signupError}] = useSignUpUserMutation();
+    const [signupUser] = useSignUpUserMutation();
     const dispatch = useAppDispatch();
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -43,10 +45,11 @@ export const Signup = ({setLogin}:Props) => {
         
         router.push("/dashboard");
         router.refresh();
-      } catch (error: any) {
-        const errorMessage = error?.data?.error || error?.error || "Signup failed. Please try again.";
+      } catch (error: unknown) {
+        const err = error as ApiError;
+        const errorMessage = err.data?.error || err.error || "Signup failed. Please try again.";
         setError(errorMessage);
-      } finally {
+    } finally {
         setLoading(false);
       }
     };
@@ -123,6 +126,7 @@ export const Signup = ({setLogin}:Props) => {
             </div>
             <button
               type="submit"
+              disabled={loading}
               className="w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             >
               Sign Up

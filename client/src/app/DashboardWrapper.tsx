@@ -10,7 +10,6 @@ import {  selectCurrentToken } from '@/state/authSlice'
 import { useRouter } from 'next/navigation'
 import { TaskDetailsModal } from '@/components/TaskDetailsModal'
 
-type Props = {}
 
 function DashboardLayout({children}: {children: React.ReactNode}) {
   const token = useAppSelector(selectCurrentToken);

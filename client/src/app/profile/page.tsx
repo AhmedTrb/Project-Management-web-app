@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import { useAppSelector } from "../redux";
+import Image from "next/image";
 
-type Props = {};
 
 const ProfilePage = () => {
   const user = useAppSelector((state) => state.auth.user);
@@ -11,7 +11,7 @@ const ProfilePage = () => {
       <div className="w-full bg-white rounded-lg shadow-lg p-8">
         <div className="flex justify-start items-center gap-x-4">
           {user?.profilePictureUrl ? (
-            <img
+            <Image
               src={user.profilePictureUrl}
               alt="Profile"
               className="w-32 h-32 rounded-full object-cover"

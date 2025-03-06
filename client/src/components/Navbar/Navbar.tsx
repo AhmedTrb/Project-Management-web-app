@@ -5,15 +5,22 @@ import React, { useState } from "react";
 import { logOut } from "@/state/authSlice";
 import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/state/api";
+import Image from "next/image";
 
-type Props = {};
 
-function Navbar({}: Props) {
+
+function Navbar() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const [logout] = useLogoutMutation();
   const [dropDownIsOpen, setDropDownIsOpen] = useState(false);
+
+  const handleLogout = () => {
+    dispatch(logOut());
+    logout();
+    router.push("/");
+  };
   return (
     <div className="flex items-center justify-between h-16 py-5 px-10 md:px-8 w-full border-b border-[#d5d5d5]">
       {/* SEARCH BAR */}
@@ -46,8 +53,10 @@ function Navbar({}: Props) {
           </div>
           <div className="flex items-center justify-start gap-3">
             {user?.profilePictureUrl ? (
-              <img
+              <Image
                 src={user.profilePictureUrl}
+                width={40}
+                height={40}
                 alt="Profile"
                 className="w-12 h-12 rounded-full object-cover"
               />
@@ -72,9 +81,7 @@ function Navbar({}: Props) {
                   <div className="cursor-pointer border-b border-red-600 w-full">
                     <p
                       className="text-sm  text-red-500  mb-1 hover:text-red-600 hover:bg-red-300 hover:bg-opacity-40 rounded-md px-2 py-1 w-full"
-                      onClick={() => {
-                        dispatch(logOut()), logout(), router.push("/");
-                      }}
+                      onClick={handleLogout}
                     >
                       Logout
                     </p>

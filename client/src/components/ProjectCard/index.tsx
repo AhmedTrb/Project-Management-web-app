@@ -3,7 +3,7 @@ import { Project } from '@/app/types/types';
 import { Avatar, AvatarGroup } from '@mui/material';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
-import Link from 'next/link';
+import Image from 'next/image';
 import React from 'react'
 
 type Props = {
@@ -14,16 +14,14 @@ export default function ProjectCard({project}: Props) {
 
     const endDate = project?.endDate ? new Date(project?.endDate) : new Date();
 
-    const priorityColorMap = {
-        low: "bg-green-400 bg-opacity-20 text-green-400",
-        medium: "bg-orange-400 bg-opacity-20 text-orange-400", 
-        high: "bg-red-500 bg-opacity-20 text-red-500"
-      };
+    
   return (
-    <Link href={`/projects/${project?.id}`} className='block'>
+    <a href={`/projects/${project?.id}`} className='block'>
     <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 max-w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out overflow-visible">
-    <img
+    <Image
       src="/projectCover.png"
+      width={250}
+      height={200}
       alt="project"
       className="w-full h-32 rounded-lg object-cover"
     />
@@ -52,7 +50,7 @@ export default function ProjectCard({project}: Props) {
       </div>
     </div>
   </div>
-</Link>
+</a>
 
   )
 }

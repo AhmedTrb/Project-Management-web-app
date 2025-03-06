@@ -7,10 +7,8 @@ import { Project, projectStatus } from "@/app/types/types";
 import { formatISO } from "date-fns";
 import { useCreateProjectMutation } from "@/state/api";
 
-type Props = {};
-
-const ProjectModal = (props: Props) => {
-  const [createProject, { isLoading, error }] = useCreateProjectMutation();
+const ProjectModal = () => {
+  const [createProject] = useCreateProjectMutation();
 
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");

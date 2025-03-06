@@ -196,7 +196,7 @@ export default function NewTaskModal({ projectId, isOpen, onClose }: Props) {
               }
             />
           </div>
-          {error && <div className="text-red-500 bg-red-500 bg-opacity-15 p-2 w-full rounded">Error: creating task"</div>}
+          {error && <div className="text-red-500 bg-red-500 bg-opacity-15 p-2 w-full rounded">Error: creating task</div>}
           {success && <div className="text-green-500 bg-green-500 bg-opacity-15 p-2 w-full rounded">Task created successfully!</div>}
           <button type='submit' className={`w-full rounded bg-primary-600 text-white p-2 shadow-sm  ${(isLoading || !isFormValid()) ? 'opacity-40 cursor-not-allowed' : ''}`} disabled={isLoading || !isFormValid()}>Create New Task</button>
         </form>

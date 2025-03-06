@@ -39,11 +39,9 @@ export const globalSlice = createSlice({
     setSelectedTask: (state, action) => {
       state.task = action.payload;
     },
-    clearTask: (state) => {
-      state.task = null;
-    }
+    
   },
 });
 
-export const {toggleModal, toggleSidebarClose, toggleSidebarOpen, toggleTaskDetailsModalOpen, toggleTaskDetailsModalClose,setSelectedTask, clearTask } = globalSlice.actions;
+export const {toggleModal, toggleSidebarClose, toggleSidebarOpen, toggleTaskDetailsModalOpen, toggleTaskDetailsModalClose,setSelectedTask } = globalSlice.actions;
 export default globalSlice.reducer;

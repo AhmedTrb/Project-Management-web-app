@@ -8,22 +8,18 @@ import NewTaskModal from '@/components/TaskModal';
 import { useParams } from 'next/navigation';
 import Graph from '../GraphView/Graph';
 import ListView from '../ListView/List';
-import { useGetProjectByIdQuery, useGetProjectTeamMembersQuery, useGetTaskAssigneesQuery } from '@/state/api';
+import { useGetProjectByIdQuery, useGetProjectTeamMembersQuery } from '@/state/api';
 import InviteMemberModal from '@/components/InviteMemberModal';
 
 
-type Props = {
-  
-};
-
-const ProjectPage = ({}: Props) => {
+const ProjectPage = () => {
   const { id } = useParams<{ id: string }>();
 
   
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isActiveTab, setIsActiveTab] = useState("BOARD");
-  const { data: project, isLoading, error } = useGetProjectByIdQuery({projectId: id});
+  const { data: project} = useGetProjectByIdQuery({projectId: id});
   const {data:projectTeamMembers} = useGetProjectTeamMembersQuery({projectId: id});
   return (
     <div className='flex flex-col justify-start w-full gap-y-6 p-10'>

@@ -68,7 +68,7 @@ export interface Task {
   projectId: number;
   authorUserId: number;
   assignedUserId?: number;
-  degree?: number;
+  degree: number;
   duration?: number;
 
   project: Project;
@@ -77,7 +77,7 @@ export interface Task {
   attachments?: Attachment[];
   comments?: Comment[];
   taskAssignments?: TaskAssignment[];
-  dependencies?: Number[];
+  dependencies?: number[];
   dependents?: TaskDependency[];
 }
 
@@ -154,3 +154,7 @@ export interface Comment {
     VIEWER = "VIEWER",
   }
   
+export interface ApiError {
+  data?: { error?: string };
+  error?: string;
+}

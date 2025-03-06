@@ -1,5 +1,6 @@
 "use client";
 import { useAppDispatch } from "@/app/redux";
+import { ApiError } from "@/app/types/types";
 import { useLoginMutation } from "@/state/api";
 import { setCredentials } from "@/state/authSlice";
 import { useRouter } from "next/navigation";
@@ -32,12 +33,10 @@ export const SignIn = ({setLogin}: Props) => {
   
       console.log(result);
       router.push("/dashboard");
-    } catch (error: any) {
-      console.error("Login error:", error);
-      
-      // Extracting the error message
-      const errorMessage = error?.data?.error  ;
-      setError(errorMessage);
+    } catch (error: unknown) {
+        const err = error as ApiError;
+        const errorMessage = err.data?.error || err.error || "Signin failed. Please try again.";
+        setError(errorMessage);
     } 
   };
 
@@ -80,7 +79,7 @@ export const SignIn = ({setLogin}: Props) => {
           </button>
         </form>
         {error && <div className="text-red-500 text-center bg-opacity-10 bg-red-500 w-full py-2 rounded-sm mt-5">{error}</div>}
-        <div className="text-center mt-5 text-gray-600">Don't have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(false)}>Sign Up</span> </div>
+        <div className="text-center mt-5 text-gray-600">Don t have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(false)}>Sign Up</span> </div>
       </div>
     </div>
   );

@@ -9,9 +9,9 @@ import { ActivityChart } from "./ActivityChart/chart-line-default";
 import { Calendar } from "@/components/ui/calendar";
 import ProjectCard from "@/components/ProjectCard";
 import { TaskCard } from "@/components/TaskCard";
-type Props = {};
 
-function HomePage({}: Props) {
+
+function HomePage() {
   
   const { data: projects } = useGetProjectsQuery();
   const { data: tasks } = useGetUserTasksQuery();
@@ -58,7 +58,7 @@ function HomePage({}: Props) {
           </div>
         </div>
       </div>
-      <div className="flex gap-x-4 justify-start items-start gap-y-5 w-full overflow-x-hidden overflow-y-scroll">
+      <div className="flex gap-x-4 justify-start items-start w-full overflow-x-auto overflow-y-hidden whitespace-nowrap scroll-smooth">
         {tasks
           ?.map((task) => (
             <TaskCard key={task.id} task={task} />

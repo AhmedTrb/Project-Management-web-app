@@ -4,6 +4,7 @@ import { Users, Mail, Search, } from 'lucide-react';
 import {  Team, TeamMemberRole} from '../types/types';
 import { useAppSelector } from '../redux';
 import { useGetUserTeamsQuery } from '@/state/api';
+import Image from 'next/image';
 
 
 const MembersPage = () => {
@@ -65,7 +66,7 @@ const MembersPage = () => {
         <main className="px-6 py-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
-              {teams?.map((team) => (
+              {filteredTeams?.map((team) => (
                 <div
                 key={team.id}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200"
@@ -95,7 +96,7 @@ const MembersPage = () => {
                           className="flex items-center space-x-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
                         >
                           {teamMember.user.profilePictureUrl ? (
-                            <img
+                            <Image
                               src={teamMember.user.profilePictureUrl}
                               alt={`${teamMember.user.username}'s profile`}
                               className="w-12 h-12 rounded-full object-cover" />

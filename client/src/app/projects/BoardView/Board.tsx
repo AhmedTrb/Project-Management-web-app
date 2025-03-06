@@ -1,26 +1,21 @@
 "use client";
 import React, { useState } from "react";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider, DragSourceMonitor, DropTargetMonitor, useDrag, useDrop } from "react-dnd";
 import { Task, TaskStatus } from "../../types/types";
+import { Ellipsis, MessageSquare, Paperclip, Plus } from "lucide-react";
 import {
-  Calendar,
-  Ellipsis,
-  MessageSquare,
-  Paperclip,
-  Plus,
-} from "lucide-react";
-import {
-  useCreateTaskMutation,
   useDeleteTaskMutation,
   useGetProjectTasksQuery,
   useGetTaskAssigneesQuery,
   useUpdateTaskStatusMutation,
 } from "@/state/api";
 import { Avatar, AvatarGroup, CircularProgress } from "@mui/material";
-import { format } from "date-fns";
 import { useDispatch } from "react-redux";
-import { setSelectedTask,toggleTaskDetailsModalOpen, toggleTaskDetailsModalClose } from "@/state/globalSlice";
+import {
+  setSelectedTask,
+  toggleTaskDetailsModalOpen,
+} from "@/state/globalSlice";
 
 type Props = {
   id: string;
@@ -28,15 +23,23 @@ type Props = {
 };
 const taskStatus = ["To Do", "In Progress", "Under Review", "Completed"];
 export default function Board({ id, setIsNewTaskModalOpen }: Props) {
-  const { data: tasks, isLoading, error } = useGetProjectTasksQuery({ projectId: id });
-  const [createTask] = useCreateTaskMutation();
+  const {
+    data: tasks,
+    isLoading,
+    error,
+  } = useGetProjectTasksQuery({ projectId: id });
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
 
   const moveTask = (taskId: string, status: TaskStatus) => {
     updateTaskStatus({ taskId, status });
   };
 
-  if (isLoading) return <div className="flex justify-center items-center w-full h-48"><CircularProgress /></div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center w-full h-48">
+        <CircularProgress />
+      </div>
+    );
   if (error) return <div>Error</div>;
   return (
     <DndProvider backend={HTML5Backend}>
@@ -69,7 +72,7 @@ const TaskColumn = ({
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "task",
     drop: (item: { id: string }) => moveTask(item.id, status),
-    collect: (monitor: any) => ({
+    collect: (monitor: DropTargetMonitor) => ({
       isOver: !!monitor.isOver(),
     }),
   }));
@@ -130,14 +133,9 @@ const TaskColumn = ({
           isOver ? "opacity-50" : ""
         }`}
       >
-        {tasks
-          .filter(
-            (task) =>
-              task.status?.toLowerCase().replace(" ", "").replace("_", "") ===
-              status.toLowerCase().replace(" ", "").replace("_", "")
-          )
+        {tasks.filter((task) => task.status === status)
           .map((task) => (
-            <TaskCard key={task.id} task={task} moveTask={moveTask} />
+            <TaskCard key={task.id} task={task}/>
           ))}
       </div>
     </div>
@@ -146,32 +144,31 @@ const TaskColumn = ({
 
 const TaskCard = ({
   task,
-  moveTask,
 }: {
   task: Task;
-  moveTask: (taskId: string, status: TaskStatus) => void;
 }) => {
   const [isTaskOptionsOpen, setIsTaskOptionsOpen] = useState(false);
 
   const numberOfComments = (task.comments && task.comments.length) || 0;
   const numberOfAttachments =
     (task.attachments && task.attachments.length) || 0;
-  const numberOfPoints = (task.points && task.points) || 0;
 
   const dispatch = useDispatch();
   const [deleteTask] = useDeleteTaskMutation();
 
-  const {data:taskAssignees} = useGetTaskAssigneesQuery({taskId: String(task.id )});
-  console.log(taskAssignees);
+  const { data: taskAssignees } = useGetTaskAssigneesQuery({
+    taskId: String(task.id),
+  });
+  
   const handleOpenTaskDetails = () => {
     dispatch(setSelectedTask(task));
     dispatch(toggleTaskDetailsModalOpen());
-  }
+  };
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "task",
     item: { id: task.id },
-    collect: (monitor: any) => ({
+    collect: (monitor: DragSourceMonitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
   }));
@@ -181,14 +178,7 @@ const TaskCard = ({
     high: "bg-red-500 bg-opacity-20 text-red-500",
   };
 
-  const taskTagsSplit = task.tags ? task.tags.split(",") : [];
-
-  const formattedStartDate = task.startDate
-    ? format(new Date(task.startDate), "P")
-    : "";
-  const formattedDueDate = task.dueDate
-    ? format(new Date(task.dueDate), "P")
-    : "";
+  
   return (
     <div
       ref={(instance) => {
@@ -223,7 +213,10 @@ const TaskCard = ({
               >
                 Delete
               </div>
-              <div className="text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md p-1 w-full" onClick={handleOpenTaskDetails}>
+              <div
+                className="text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md p-1 w-full"
+                onClick={handleOpenTaskDetails}
+              >
                 Open
               </div>
             </div>

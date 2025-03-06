@@ -22,10 +22,10 @@ import {
   toggleSidebarClose,
   toggleSidebarOpen,
 } from "@/state/globalSlice";
-type Props = {};
 
-const Sidebar = (props: Props) => {
-  const { data: projects, isLoading, error } = useGetProjectsQuery();
+
+const Sidebar = () => {
+  const { data: projects } = useGetProjectsQuery();
   const dispatch = useAppDispatch();
   const isSidebarOpen = useAppSelector((state) => state.global.isSidebarOpen);
   return (

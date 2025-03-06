@@ -7,7 +7,7 @@ import {
   useGetProjectTeamMembersQuery,
   useGetUsersQuery,
 } from "@/state/api";
-import { TeamMemberRole, User } from "@/app/types/types";
+import { ApiError, TeamMemberRole, User } from "@/app/types/types";
 import { useAppSelector } from "@/app/redux";
 import { Trash } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -36,7 +36,7 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const { data: users, isLoading, isError } = useGetUsersQuery();
+  const { data: users, isLoading } = useGetUsersQuery();
   const [selectedUsers, setSelectedUsers] = useState<userOption[]>([]);
   const [addTeamMember, { error: teamMemberError }] =
     useAddTeamMemberMutation();
@@ -57,8 +57,9 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
           setError(teamMemberError.data.message);
           setTimeout(() => setError(""), 5000);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const error  = err as ApiError;
+        setError(error.data?.error || "An error occurred");
         setTimeout(() => setError(""), 5000);
         setError("");
       }
@@ -77,7 +78,7 @@ export default function InviteMemberModal({ isOpen, onClose }: Props) {
         return "bg-gray-400 text-gray-400 bg-opacity-20";
     }
   };
-  const inputClasses = "w-full rounded border border-gray-300 p-2 shadow-sm";
+  
 
   return (
     <Modal title="Invite Member" isOpen={isOpen} onClose={onClose}>

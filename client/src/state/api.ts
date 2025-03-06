@@ -1,10 +1,8 @@
-import { Project, Task, TaskAssignment, TaskDependency, Team, TeamMember, TeamMemberRole, User } from "@/app/types/types";
+import { Project, Task, TaskAssignment, TaskDependency, Team, TeamMember, User } from "@/app/types/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logOut, setCredentials } from "./authSlice";
 import { RootState } from "@/app/redux";
 import dotenv from "dotenv";
-import { url } from "inspector";
-import { get } from "http";
 
 dotenv.config();
 
@@ -92,7 +90,7 @@ export const api = createApi({
         method: "POST",
         body:{taskId,userId}
       }),
-      invalidatesTags: ["Tasks"],
+      invalidatesTags: ["Tasks", "Users"],
     }),
     // get task assignees
     getTaskAssignees: build.query<TeamMember[], { taskId: string }>({
@@ -163,6 +161,7 @@ export const api = createApi({
         url: "/api/auth/signup",
         method: "POST",
         body: { username, email, password },
+        invalidatesTags: ["Users"],
       }),
     }),
 
