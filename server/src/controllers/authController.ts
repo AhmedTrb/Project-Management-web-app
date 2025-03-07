@@ -38,10 +38,11 @@ export const localLogin = async (req: Request, res: Response) => {
       
       // Store the refresh token in an HTTP-only cookie
       res.cookie('jwt', refreshToken, {
-        httpOnly: true,  // Prevents client-side access
-        sameSite: 'lax', 
-        path: '/api/refresh', // Cookie available for all routes
-        maxAge: 7 * 24 * 60 * 60 * 1000, 
+        httpOnly: true,        // Prevents client-side access
+        secure: true,          // Ensures cookie is only sent over HTTPS (required in production)
+        sameSite: 'none',      // Required for cross-origin requests
+        path: '/api/refresh',
+        maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
       });
   
       // Send the access token in response
