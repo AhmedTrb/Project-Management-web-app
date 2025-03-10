@@ -12,7 +12,9 @@ This project was inspired by a university course on Graph Theory, where I explor
 - Improve the visualization of task dependencies for better project planning. 
 
 [VIDEO DEMO](https://drive.google.com/file/d/1nH3_EfDSxEBc-k4HovFmLGog7LNgxCe4/view?usp=sharing)
-
+[Live Demo website](https://project-management-web-app-lilac.vercel.app)
+- email : test@gmail.com
+- password : 1111
 *** 
 
 ![image](https://github.com/user-attachments/assets/cf75824e-a7da-4e8a-ad49-f267d6574099)
