@@ -30,7 +30,7 @@ export const TaskCard = ({ task }: Props) => {
   return (
     
       <div
-        className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out overflow-visible"
+        className="bg-white rounded-lg p-4 shadow-sm flex flex-col justify-start items-start gap-y-4 w-72 h-80 mb-4 ml-2 cursor-pointer hover:shadow-xl transition-shadow duration-300 ease-in-out"
         onClick={() => handleTaskCardClick}
       >
         <Image
@@ -50,8 +50,8 @@ export const TaskCard = ({ task }: Props) => {
 
           <PriorityComponent priority={task?.priority as Priority} />
         </div>
-        <div className="h-12 overflow-hidden">
-          <p className="text-sm text-gray-500 line-clamp-2">
+        <div className="h-12">
+          <p className="text-sm text-gray-500 overflow-ellipsis">
             {task?.description}
           </p>
         </div>

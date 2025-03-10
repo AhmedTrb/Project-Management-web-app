@@ -58,7 +58,7 @@ function HomePage() {
           </div>
         </div>
       </div>
-      <div className="flex gap-x-4 justify-start items-start w-full overflow-x-auto overflow-y-hidden whitespace-nowrap scroll-smooth">
+      <div className="flex gap-x-4 justify-start items-start w-full max-w-fit overflow-x-hidden gap-y-5 h-full overflow-y-visible scroll-smooth">
         {tasks
           ?.map((task) => (
             <TaskCard key={task.id} task={task} />

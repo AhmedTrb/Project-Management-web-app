@@ -1,12 +1,13 @@
 "use client";
 import { useGetUserTeamsQuery } from '@/state/api';
+import { CircularProgress } from '@mui/material';
 import { MessageSquare, Mic, MoreVertical, Paperclip, Phone, Search, Send, Smile, User, Users, Video } from 'lucide-react'
 import React, { useState } from 'react'
 
 type Props = {}
 
 export default function page({}: Props) {
-    const {data:teams} = useGetUserTeamsQuery();
+    const {data:teams, isLoading} = useGetUserTeamsQuery();
     const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
     const [message, setMessage] = useState("");
 
@@ -29,7 +30,7 @@ export default function page({}: Props) {
                     <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-400 w-3 h-3" />
                 </div>
                 {/* Team Chat Cards */}
-                {teams?.map((team) => (
+                {isLoading ? <div className='flex justify-center items-center h-screen w-full'><CircularProgress/> </div> : teams?.map((team) => (
                     <div 
                         key={team.id} 
                         className={`p-4 border-b border-gray-200 flex items-center space-x-4 cursor-pointer ${selectedTeamId === team.id ? 'bg-[#F5F5F5]' : ''}`}
