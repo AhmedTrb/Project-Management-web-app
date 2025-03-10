@@ -8,8 +8,9 @@ import NewTaskModal from '@/components/TaskModal';
 import { useParams } from 'next/navigation';
 import Graph from '../GraphView/Graph';
 import ListView from '../ListView/List';
-import { useGetProjectByIdQuery, useGetProjectTeamMembersQuery } from '@/state/api';
+import { useGetProjectByIdQuery, useGetProjectTasksQuery, useGetProjectTeamMembersQuery } from '@/state/api';
 import InviteMemberModal from '@/components/InviteMemberModal';
+import { CircularProgress } from '@mui/material';
 
 
 const ProjectPage = () => {
@@ -21,6 +22,7 @@ const ProjectPage = () => {
   const [isActiveTab, setIsActiveTab] = useState("BOARD");
   const { data: project} = useGetProjectByIdQuery({projectId: id});
   const {data:projectTeamMembers} = useGetProjectTeamMembersQuery({projectId: id});
+  const {data:tasks, isLoading, isError} = useGetProjectTasksQuery({projectId: id});
   return (
     <div className='flex flex-col justify-start w-full gap-y-6 p-10'>
 
@@ -64,16 +66,17 @@ const ProjectPage = () => {
           <button className={`text-md text-secondary-950 px-2 ${isActiveTab === "LIST" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("LIST")}>List</button>
           <button className={`text-md text-secondary-950 px-2${isActiveTab === "GRAPH" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("GRAPH")}>Graph</button>
         </div>
-        {/* View Content */}
-        {isActiveTab === "BOARD" && (
-          <Board id={id} setIsNewTaskModalOpen={setIsNewTaskModalOpen} />
+        {isError && <p className='text-red-500'>An error occurred</p>}
+        {isLoading ? <div className='flex justify-center items-center h-64 w-full'><CircularProgress /> </div> :
+        isActiveTab === "BOARD" && (
+          <Board id={id} setIsNewTaskModalOpen={setIsNewTaskModalOpen} tasks={tasks}/>
         )}
         {isActiveTab === "GRAPH" && (
           <Graph id={id} />
         )}
         {isActiveTab === "LIST" && (
           <ListView id={id} />
-        )}  
+        )}           
       </div>
     </div>
   )

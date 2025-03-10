@@ -7,15 +7,17 @@ import { useDeleteTaskMutation, useGetProjectDependenciesQuery, useGetProjectTas
 import '@xyflow/react/dist/style.css';
 import { Task, TaskStatus } from '@/app/types/types';
 import { Ellipsis } from 'lucide-react';
+import { CircularProgress } from '@mui/material';
 
 type Props = { id: string };
 
 export default function Graph({ id }: Props) {
   const { data: tasks, isLoading, isError } = useGetProjectTasksQuery({ projectId: id });
-  const { data: dependencies } = useGetProjectDependenciesQuery({ projectId: id });
-
-  if (isLoading) return <div>Loading...</div>;
-  if (isError || !tasks) return <div>Error loading tasks</div>;
+  const { data: dependencies, isLoading: isLoadingDependencies } = useGetProjectDependenciesQuery({ projectId: id });
+  
+  
+  if (isError || !tasks || !dependencies) return <div>Error loading tasks</div>;
+  
 
   const { initialNodes, initialEdges } = useMemo(() => {
     const taskMap = new Map<number, Task>(tasks.map((task) => [task.id, task]));
@@ -53,7 +55,7 @@ export default function Graph({ id }: Props) {
       id: `e${prerequisiteTaskId}-${dependentTaskId}`,
       source: String(prerequisiteTaskId),
       target: String(dependentTaskId),
-      markerEnd: { type: MarkerType.Arrow, width: 15, height: 15, color: '#f5f5f5' },
+      markerEnd: { type: MarkerType.Arrow, width: 15, height: 15, color: '#000F' },
       label: `${taskMap.get(prerequisiteTaskId)?.duration || 0} days`,
       style: { strokeWidth: 2 },
       labelStyle: { fill: '#00F', fontSize: 12 },
@@ -64,13 +66,13 @@ export default function Graph({ id }: Props) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
+  if (isLoading || isLoadingDependencies) return <div className='flex justify-center items-center h-screen w-full'><CircularProgress /></div>;
   return (
     <div className="h-[600px] w-full border border-gray-200">
       <ReactFlow 
         nodes={nodes} 
-        edges={initialEdges}
-        nodeTypes={{ taskNode: (props) => <TaskNodeCard {...props} nodes={nodes} setNodes={setNodes} /> }} // Register custom node
+        edges={edges}
+        nodeTypes={nodeTypes} // Register custom node
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         defaultViewport={{ x: 50, y: 50, zoom: 0.7 }}
@@ -81,8 +83,9 @@ export default function Graph({ id }: Props) {
     </div>
   );
 }
-
-// Memoize your custom node component to prevent unnecessary re-renders.
+const nodeTypes = {
+  taskNode: (props:TaskNodeProps) => <TaskNodeCard {...props} />,
+};
 type TaskNodeProps = {
   data: {
     label: string;

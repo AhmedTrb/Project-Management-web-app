@@ -6,11 +6,10 @@ import { Task, TaskStatus } from "../../types/types";
 import { Ellipsis, MessageSquare, Paperclip, Plus } from "lucide-react";
 import {
   useDeleteTaskMutation,
-  useGetProjectTasksQuery,
   useGetTaskAssigneesQuery,
   useUpdateTaskStatusMutation,
 } from "@/state/api";
-import { Avatar, AvatarGroup, CircularProgress } from "@mui/material";
+import { Avatar, AvatarGroup } from "@mui/material";
 import { useDispatch } from "react-redux";
 import {
   setSelectedTask,
@@ -19,28 +18,18 @@ import {
 
 type Props = {
   id: string;
+  tasks: Task[] | undefined;
   setIsNewTaskModalOpen: (isOpen: boolean) => void;
 };
 const taskStatus = ["To Do", "In Progress", "Under Review", "Completed"];
-export default function Board({ id, setIsNewTaskModalOpen }: Props) {
-  const {
-    data: tasks,
-    isLoading,
-    error,
-  } = useGetProjectTasksQuery({ projectId: id });
+export default function Board({ id, setIsNewTaskModalOpen,tasks }: Props) {
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
 
   const moveTask = (taskId: string, status: TaskStatus) => {
     updateTaskStatus({ taskId, status });
   };
 
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center w-full h-48">
-        <CircularProgress />
-      </div>
-    );
-  if (error) return <div>Error</div>;
+  
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-4">

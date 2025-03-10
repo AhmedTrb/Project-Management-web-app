@@ -5,16 +5,18 @@ import {  Team, TeamMemberRole} from '../types/types';
 import { useAppSelector } from '../redux';
 import { useGetUserTeamsQuery } from '@/state/api';
 import Image from 'next/image';
+import { CircularProgress } from '@mui/material';
 
 
 const MembersPage = () => {
 
-  const {data:teams} = useGetUserTeamsQuery();
+  const {data:teams, isLoading} = useGetUserTeamsQuery();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTeams, setFilteredTeams] = useState<Team[]>(teams || []);
   const currentUser = useAppSelector((state) => state.auth.user);
   
-  
+  if(isLoading) return <div className='flex justify-center items-center h-screen w-full'><CircularProgress /> </div>
+      
 
   const getRoleBadgeColors = (role: string): string => {
     switch (role) {
@@ -66,7 +68,7 @@ const MembersPage = () => {
         <main className="px-6 py-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
-              {filteredTeams?.map((team) => (
+              {teams?.map((team) => (
                 <div
                 key={team.id}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200"
@@ -97,6 +99,8 @@ const MembersPage = () => {
                         >
                           {teamMember.user.profilePictureUrl ? (
                             <Image
+                              width={48}
+                              height={48}
                               src={teamMember.user.profilePictureUrl}
                               alt={`${teamMember.user.username}'s profile`}
                               className="w-12 h-12 rounded-full object-cover" />
