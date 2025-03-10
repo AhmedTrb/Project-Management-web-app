@@ -39,7 +39,7 @@ export default function page({}: Props) {
                             <Users className='w-6 h-6 text-gray-400' />
                         </div>
                         <div className='flex flex-col gap-y-1 w-[80%]'>
-                            <h3 className='text-sm font-semibold text-gray-900'>{team.teamName}</h3>
+                            <h3 className='text-sm font-semibold text-gray-950'>{team.teamName}</h3>
                             <div className='flex justify-between items-center'>
                                 <p className='text-xs text-gray-500 overflow-ellipsis'>{team.members?.map((member) => member.user.username).join(', ')}</p>
                                 <div className='w-2 h-2 rounded-full bg-green-500'></div>
