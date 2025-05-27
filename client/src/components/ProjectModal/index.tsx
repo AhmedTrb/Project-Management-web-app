@@ -4,7 +4,6 @@ import { useAppDispatch } from "@/app/redux";
 import { useAppSelector } from "@/app/redux";
 import { toggleModal } from "@/state/globalSlice";
 import { Project, projectStatus } from "@/app/types/types";
-import { formatISO } from "date-fns";
 import { useCreateProjectMutation } from "@/state/api";
 
 const ProjectModal = () => {
@@ -34,12 +33,8 @@ const ProjectModal = () => {
     )
       return;
 
-    const formattedStartDate = formatISO(new Date(startDate), {
-      representation: "complete",
-    });
-    const formattedEndDate = formatISO(new Date(endDate), {
-      representation: "complete",
-    });
+    const formattedStartDate = new Date(startDate);
+    const formattedEndDate = new Date(endDate);
 
     const newProject: Partial<Project> = {
       name: projectName,
