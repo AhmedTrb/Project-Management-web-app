@@ -11,7 +11,7 @@ router.get("/:projectId",getProjectTasks);
 router.post("/:projectId", createTask);
 router.patch("/:taskId/status",updateTaskStatus);
 router.get("/",getUserTasks);
-router.delete("/:taskId" ,deleteTask);
+router.delete("/project/:projectId/tasks/:taskId" ,deleteTask);
 router.get("/:taskId" ,getTaskById);
 
 // task assignments

@@ -66,7 +66,7 @@ const baseQueryWithReauth = async (
 export const api = createApi({
   baseQuery: baseQueryWithReauth,
   reducerPath: "api",
-  tagTypes: ["Projects", "Tasks", "Teams","Users"],
+  tagTypes: ["Projects", "Tasks", "Teams","Users","Dependencies"],
 
 /**
  * Defines API endpoints for performing various operations related to teams, users, projects, and tasks.
@@ -274,9 +274,9 @@ export const api = createApi({
       ],
     }),
     // Delete a task
-    deleteTask: build.mutation<Task, { taskId: string }>({
-      query: ({ taskId }) => ({
-        url: `/api/tasks/${taskId}`,
+    deleteTask: build.mutation<Task, { taskId: string,projectId:string }>({
+      query: ({ taskId,projectId }) => ({
+        url: `/api/projects/${projectId}/tasks/${taskId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Tasks"],
@@ -287,7 +287,7 @@ export const api = createApi({
         url: `/api/projects/${projectId}/tasks/dependencies`,
         method: "GET",
       }),
-      providesTags: ["Tasks"],
+      providesTags: ["Dependencies"],
     }),
   }),
 });

@@ -65,6 +65,7 @@ const ProjectPage = () => {
           <button className={`text-md text-secondary-950 px-2 ${isActiveTab === "BOARD" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("BOARD")}>Board</button>
           <button className={`text-md text-secondary-950 px-2 ${isActiveTab === "LIST" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("LIST")}>List</button>
           <button className={`text-md text-secondary-950 px-2${isActiveTab === "GRAPH" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("GRAPH")}>Graph</button>
+          
         </div>
         {isError && <p className='text-red-500'>An error occurred</p>}
         {isLoading ? <div className='flex justify-center items-center h-64 w-full'><CircularProgress /> </div> :
@@ -76,7 +77,8 @@ const ProjectPage = () => {
         )}
         {isActiveTab === "LIST" && (
           <ListView id={id} />
-        )}           
+        )}  
+        
       </div>
     </div>
   )

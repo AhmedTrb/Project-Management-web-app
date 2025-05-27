@@ -57,6 +57,10 @@ model Project {
   teamId       Int
   team        Team     @relation(fields: [teamId], references: [id])
   tasks        Task[]
+
+  bestCaseDuration     Int?
+  worstCaseDuration    Int?
+  expectedDuration     Float?
 }
 
 model Task {
@@ -84,6 +88,13 @@ model Task {
   dependents      TaskDependency[] @relation("PrerequisiteTask")
   degree          Int?
   duration        Int?
+
+  earliestStart   Int?  @default(0)
+  earliestFinish  Int?  @default(0)
+  latestStart     Int?  @default(0)
+  latestFinish    Int?  @default(0)
+  slack           Int?  @default(0)
+  isCriticalPath  Boolean? @default(false)
 }
 
 model TaskDependency {

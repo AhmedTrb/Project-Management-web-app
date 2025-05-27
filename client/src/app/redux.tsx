@@ -1,3 +1,4 @@
+"use client";
 import { useRef } from "react";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/state/authSlice";

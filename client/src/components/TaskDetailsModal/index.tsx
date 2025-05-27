@@ -23,10 +23,10 @@ interface selectedUserOptionValue {
   label: string;
 }
 export const TaskDetailsModal = () => {
-  const [error,setError] = useState("");
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const task = useAppSelector((state) => state.global.task);
-  const {data: users,} = useGetUsersQuery();
+  const { data: users } = useGetUsersQuery();
 
   const { data: taskAssignees } = useGetTaskAssigneesQuery({
     taskId: String(task?.id),
@@ -35,13 +35,15 @@ export const TaskDetailsModal = () => {
   const isTaskDetailsModalOpen = useAppSelector(
     (state) => state.global.isTaskDetailsModalOpen
   );
-  const [assignTaskToUser,{isSuccess}] = useAssignUserToTaskMutation();
-  const [selectedUsers, setSelectedUsers] = useState<selectedUserOptionValue[]>([]);
+  const [assignTaskToUser, { isSuccess }] = useAssignUserToTaskMutation();
+  const [selectedUsers, setSelectedUsers] = useState<selectedUserOptionValue[]>(
+    []
+  );
 
   const handleAssignUsers = (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (selectedUsers.length == 0) return ;
+    if (selectedUsers.length == 0) return;
 
     for (const userOptionValue of selectedUsers) {
       try {
@@ -49,23 +51,19 @@ export const TaskDetailsModal = () => {
           taskId: String(task?.id),
           userId: String(userOptionValue.userId),
         }).unwrap();
-        
       } catch (error: unknown) {
         const err = error as ApiError;
-        const errorMessage  = err?.data?.error || "Error assigning task to user";
+        const errorMessage = err?.data?.error || "Error assigning task to user";
         setError(errorMessage);
       }
     }
-
   };
 
   const formatDate = (date: Date) => {
     return format(date, "dd/MM/yyyy");
   };
 
-  if(!isTaskDetailsModalOpen) return null;
-  
-
+  if (!isTaskDetailsModalOpen) return null;
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-50 flex h-full w-full items-center justify-end overflow-y-auto bg-black bg-opacity-10 ">
       <motion.div
@@ -95,7 +93,7 @@ export const TaskDetailsModal = () => {
               {task?.title} :
             </h2>
             <p className="text-gray-800 text-md font-normal">
-              {task?.description} 
+              {task?.description}
             </p>
           </div>
 
@@ -126,50 +124,108 @@ export const TaskDetailsModal = () => {
             Assigned Users
           </h2>
           <div className="flex flex-col w-full gap-5">
-          <div className="flex">
-            <AvatarGroup max={taskAssignees?.length}>
-              {taskAssignees?.map((teamMember) => (
-                <div className="relative" key={teamMember.userId}><Avatar alt={teamMember.user.username} src={"https://avatar.iran.liara.run/public"} /><X className="absolute text-secondary-950 top-0 right-0 cursor-pointer" size={14} /></div>
-              ))}
-            </AvatarGroup>
-          </div>
-          <form onSubmit={handleAssignUsers} className="flex flex-col gap-2">
-
-          
-            <Select
-              isMulti
-              className="basic-multi-select"
-              classNamePrefix="select"
-              placeholder="assign users"
-              value={selectedUsers.map((user) => ({
-                value: user,
-                label: user.label,
-              }))}
-              options={
-                users
-                  ? users.filter((user) => !taskAssignees?.some(assignee => assignee.userId === user.userId)).map((user) => ({
-                      value: {
-                        userId: String(user.userId),
-                        label: user.username,
-                      } as selectedUserOptionValue,
-                      label: user.username,
-                    }))
-                  : []
-              }
-              onChange={(selected) =>
-                setSelectedUsers(
-                  selected ? selected.map((option) => option.value) : []
-                )
-              }
-            />
-            {isSuccess && <p className="text-green-400 bg-green-400 bg-opacity-10 w-full rounded p-2">Users assigned successfully</p>}
-            {error && <p className="text-red-400 bg-red-400 bg-opacity-10 w-full rounded p-2">{error}</p>}
-            <button className="bg-primary-600  text-white  px-3 py-1 rounded-md">
-              Assign users
-            </button>
+            <div className="flex">
+              <AvatarGroup max={taskAssignees?.length}>
+                {taskAssignees?.map((teamMember) => (
+                  <div className="relative" key={teamMember.userId}>
+                    <Avatar
+                      alt={teamMember.user.username}
+                      src={"https://avatar.iran.liara.run/public"}
+                    />
+                    <X
+                      className="absolute text-secondary-950 top-0 right-0 cursor-pointer"
+                      size={14}
+                    />
+                  </div>
+                ))}
+              </AvatarGroup>
+            </div>
+            <form onSubmit={handleAssignUsers} className="flex flex-col gap-2">
+              <Select
+                isMulti
+                className="basic-multi-select"
+                classNamePrefix="select"
+                placeholder="assign users"
+                value={selectedUsers.map((user) => ({
+                  value: user,
+                  label: user.label,
+                }))}
+                options={
+                  users
+                    ? users
+                        .filter(
+                          (user) =>
+                            !taskAssignees?.some(
+                              (assignee) => assignee.userId === user.userId
+                            )
+                        )
+                        .map((user) => ({
+                          value: {
+                            userId: String(user.userId),
+                            label: user.username,
+                          } as selectedUserOptionValue,
+                          label: user.username,
+                        }))
+                    : []
+                }
+                onChange={(selected) =>
+                  setSelectedUsers(
+                    selected ? selected.map((option) => option.value) : []
+                  )
+                }
+              />
+              {isSuccess && (
+                <p className="text-green-400 bg-green-400 bg-opacity-10 w-full rounded p-2">
+                  Users assigned successfully
+                </p>
+              )}
+              {error && (
+                <p className="text-red-400 bg-red-400 bg-opacity-10 w-full rounded p-2">
+                  {error}
+                </p>
+              )}
+              <button className="bg-primary-600  text-white  px-3 py-1 rounded-md">
+                Assign users
+              </button>
             </form>
           </div>
-          
+        </div>
+
+        {/* Comments Section */}
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Comments</h2>
+          <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+            {task?.comments?.map((comment) => (
+              <div key={comment.id} className="p-2 bg-gray-100 rounded-md">
+                <p className="text-sm text-gray-800 font-medium">
+                  {comment.user.username}
+                </p>
+                <p className="text-sm text-gray-700">{comment.text}</p>
+                <p className="text-xs text-gray-500 text-right">
+                  {format(new Date(comment.createdAt), "dd/MM/yyyy HH:mm")}
+                </p>
+              </div>
+            ))}
+          </div>
+          <form
+            onSubmit={() =>{} }
+            className="mt-4 flex flex-col gap-2"
+          >
+            <textarea
+              rows={2}
+              className="w-full border border-gray-300 rounded-md p-2"
+              placeholder="Write a comment..."
+              value={""}
+              onChange={()=> {}}
+            />
+            <button
+              type="submit"
+              className="bg-primary-600 text-white px-3 py-1 rounded-md self-end disabled:opacity-50"
+              
+            >
+              
+            </button>
+          </form>
         </div>
       </motion.div>
     </div>,

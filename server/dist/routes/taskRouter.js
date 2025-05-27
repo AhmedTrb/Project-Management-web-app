@@ -10,7 +10,7 @@ router.get("/:projectId", taskController_1.getProjectTasks);
 router.post("/:projectId", taskController_1.createTask);
 router.patch("/:taskId/status", taskController_1.updateTaskStatus);
 router.get("/", taskController_1.getUserTasks);
-router.delete("/:taskId", taskController_1.deleteTask);
+router.delete("/project/:projectId/tasks/:taskId", taskController_1.deleteTask);
 router.get("/:taskId", taskController_1.getTaskById);
 // task assignments
 router.post('/assign/task', taskAssignmentController_1.assignUserToTask);

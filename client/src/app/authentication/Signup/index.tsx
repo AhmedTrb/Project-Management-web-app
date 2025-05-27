@@ -133,7 +133,7 @@ export const Signup = ({setLogin}:Props) => {
             </button>
           </form>
           {error && <p className="mt-4 text-md py-1 rounded bg-red-500 bg-opacity-20 text-center text-red-500">{error}</p>}
-          <div className="text-center mt-5 text-gray-600">Already have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(true)}>Sign up</span> </div>
+          <div className="text-center mt-5 text-gray-600">Already have an account? <span className="text-primary-600 font-bold cursor-pointer" onClick={() => setLogin(true)}>Sign in</span> </div>
         </div>
       </div>
     );

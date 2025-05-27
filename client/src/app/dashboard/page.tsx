@@ -13,8 +13,8 @@ import { TaskCard } from "@/components/TaskCard";
 
 function HomePage() {
   
-  const { data: projects } = useGetProjectsQuery();
-  const { data: tasks } = useGetUserTasksQuery();
+  const { data: projects, isLoading:isLoadingProjects,isError: isErrorProjects } = useGetProjectsQuery();
+  const { data: tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useGetUserTasksQuery();
   
 
   
@@ -39,7 +39,19 @@ function HomePage() {
       </div>
       <div>
         <div className="flex gap-x-4 justify-start items-start max-w-fit overflow-x-hidden gap-y-5 h-full overflow-y-visible scroll-smooth ">
-        {!projects || projects.length === 0 ? <div className="text-center font-normal text-lg text-secondary-950">No projects provided</div> :
+        
+        {isLoadingProjects ? (
+          <div className="flex justify-center items-center w-full h-full">
+            <CircularProgress />
+          </div>
+        ) : isErrorProjects ? (
+          <div className="text-center font-normal text-lg text-secondary-950">
+            Error loading projects
+          </div>
+        ) : (
+          <></>
+        )}
+        {!projects || !isLoadingProjects && projects.length === 0  ? <div className="text-center font-normal text-lg text-secondary-950">No projects Found</div> :
           projects.map((project: Project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
@@ -59,6 +71,18 @@ function HomePage() {
         </div>
       </div>
       <div className="flex gap-x-4 justify-start items-start w-full max-w-fit overflow-x-hidden gap-y-5 h-full overflow-y-visible scroll-smooth">
+        {isLoadingTasks ? (
+          <div className="flex justify-center items-center w-full h-full">
+            <CircularProgress />
+          </div>
+        ) : isErrorTasks ? (
+          <div className="text-center font-normal text-lg text-secondary-950">
+            Error loading tasks
+          </div>
+        ) : (
+          <></>
+        )}
+        {(!isLoadingTasks && tasks?.length === 0) && <div className="text-center font-normal text-lg text-secondary-950">No tasks Found</div> }
         {tasks
           ?.map((task) => (
             <TaskCard key={task.id} task={task} />
@@ -76,11 +100,11 @@ type projectHeaderProps = {
 const ProjectHeader = ({ userTasks }: projectHeaderProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [runningTasksCount, setRunningTasksCount] = useState(0);
-  const target = userTasks.length; // Target value for the counter
+  const target = userTasks.length // Target value for the counter
   const duration = 2000; // Duration in ms for the counter animation
   // Counter animation
   useEffect(() => {
-    const increment = target / (duration / 50); 
+    const increment = userTasks.filter((task) => task.status !== "Completed").length / (duration / 50); 
     const timer = setInterval(() => {
       setRunningTasksCount((prev) => {
         if (prev + increment >= target) {

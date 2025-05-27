@@ -198,7 +198,8 @@ const TaskCard = ({
             <div className="absolute top-5 right-0 bg-white shadow-md rounded-md p-2 w-2/3">
               <div
                 className="text-sm font-normal text-red-500 hover:bg-red-500 hover:bg-opacity-10 rounded-md p-1 w-full"
-                onClick={() => deleteTask({ taskId: task.id.toString() })}
+                onClick={() => deleteTask({ taskId: task.id.toString(), projectId: task.projectId.toString() })}
+                
               >
                 Delete
               </div>
