@@ -49,7 +49,7 @@ const TaskNodeCard = React.memo(({ data, setNodes, nodes }: any) => {
   }, []);
 
   const handleDelete = useCallback(() => {
-    deleteTask({ taskId: data.id.toString() });
+    deleteTask({ taskId: data.id.toString(), projectId: data.projectId.toString() });
     setNodes((nodes: TaskNode[]) => nodes.filter((node) => node.id !== data.id.toString()));
   }, [data.id, deleteTask, setNodes]);
 
