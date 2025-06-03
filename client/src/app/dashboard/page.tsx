@@ -1,8 +1,7 @@
 "use client";
 import CircularProgress from "@mui/material/CircularProgress";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft ,ArrowRight} from "lucide-react";
 import { useGetProjectsQuery, useGetUserTasksQuery } from "@/state/api";
 import {  Task, Project } from "../types/types";
 import { ActivityChart } from "./ActivityChart/chart-line-default";

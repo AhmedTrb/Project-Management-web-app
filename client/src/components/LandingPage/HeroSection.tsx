@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import StaticGraphExample from './StaticGraphExample';
 const HeroSection = () => {
   return (
     <section className="hero-gradient pt-28 pb-16 md:pt-32 md:pb-24">
@@ -23,7 +24,7 @@ const HeroSection = () => {
           </div>
         </div>
         <div className="mt-16 max-w-5xl mx-auto relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white z-10 h-32 bottom-0"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white z-10 h-16 bottom-0 left-1 right-1"></div>
           <div className="relative rounded-xl shadow-xl overflow-hidden border border-gray-200">
             <div className="absolute top-0 left-0 right-0 h-10 flex items-center px-4">
               <div className="flex space-x-2">
@@ -32,10 +33,10 @@ const HeroSection = () => {
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
               </div>
             </div>
-            <div className="pt-10">
-              <div className="min-h-[300px] md:min-h-[400px]  rounded-lg flex items-center justify-center">
-                <Image src="/graphView.png" alt="Project Graph View" width={1100} height={600} className='object-cover'/>
-              </div>
+            <div className="pt-10 w-full h-[500px] py-4">
+              
+                <StaticGraphExample />
+              
             </div>
           </div>
         </div>
