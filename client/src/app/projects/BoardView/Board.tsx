@@ -1,11 +1,18 @@
 "use client";
 import React, { useState } from "react";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider, DragSourceMonitor, DropTargetMonitor, useDrag, useDrop } from "react-dnd";
+import {
+  DndProvider,
+  DragSourceMonitor,
+  DropTargetMonitor,
+  useDrag,
+  useDrop,
+} from "react-dnd";
 import { Task, TaskStatus } from "../../types/types";
 import { Ellipsis, MessageSquare, Paperclip, Plus } from "lucide-react";
 import {
   useDeleteTaskMutation,
+  useGetProjectTasksQuery,
   useGetTaskAssigneesQuery,
   useUpdateTaskStatusMutation,
 } from "@/state/api";
@@ -15,21 +22,22 @@ import {
   setSelectedTask,
   toggleTaskDetailsModalOpen,
 } from "@/state/globalSlice";
+import Loader from "@/components/Loader/Loader";
 
 type Props = {
   id: string;
-  tasks: Task[] | undefined;
+  tasks?: Task[];
   setIsNewTaskModalOpen: (isOpen: boolean) => void;
 };
 const taskStatus = ["To Do", "In Progress", "Under Review", "Completed"];
-export default function Board({ id, setIsNewTaskModalOpen,tasks }: Props) {
+export default function Board({ id, setIsNewTaskModalOpen ,tasks}: Props) {
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
-
+  
   const moveTask = (taskId: string, status: TaskStatus) => {
     updateTaskStatus({ taskId, status });
   };
 
-  
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-4">
@@ -122,20 +130,17 @@ const TaskColumn = ({
           isOver ? "opacity-50" : ""
         }`}
       >
-        {tasks.filter((task) => task.status === status)
+        {tasks
+          .filter((task) => task.status === status)
           .map((task) => (
-            <TaskCard key={task.id} task={task}/>
+            <TaskCard key={task.id} task={task} />
           ))}
       </div>
     </div>
   );
 };
 
-const TaskCard = ({
-  task,
-}: {
-  task: Task;
-}) => {
+const TaskCard = ({ task }: { task: Task }) => {
   const [isTaskOptionsOpen, setIsTaskOptionsOpen] = useState(false);
 
   const numberOfComments = (task.comments && task.comments.length) || 0;
@@ -145,10 +150,15 @@ const TaskCard = ({
   const dispatch = useDispatch();
   const [deleteTask] = useDeleteTaskMutation();
 
-  const { data: taskAssignees } = useGetTaskAssigneesQuery({
-    taskId: String(task.id),
-  });
-  
+  const { data: taskAssignees } = useGetTaskAssigneesQuery(
+    {
+      taskId: String(task.id),
+    },
+    {
+      skip: !task.id,
+    }
+  );
+
   const handleOpenTaskDetails = () => {
     dispatch(setSelectedTask(task));
     dispatch(toggleTaskDetailsModalOpen());
@@ -167,7 +177,6 @@ const TaskCard = ({
     high: "bg-red-500 bg-opacity-20 text-red-500",
   };
 
-  
   return (
     <div
       ref={(instance) => {
@@ -198,8 +207,12 @@ const TaskCard = ({
             <div className="absolute top-5 right-0 bg-white shadow-md rounded-md p-2 w-2/3">
               <div
                 className="text-sm font-normal text-red-500 hover:bg-red-500 hover:bg-opacity-10 rounded-md p-1 w-full"
-                onClick={() => deleteTask({ taskId: task.id.toString(), projectId: task.projectId.toString() })}
-                
+                onClick={() =>
+                  deleteTask({
+                    taskId: task.id.toString(),
+                    projectId: task.projectId.toString(),
+                  })
+                }
               >
                 Delete
               </div>

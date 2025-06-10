@@ -32,7 +32,7 @@ const Sidebar = () => {
     <div
       className={`${
         isSidebarOpen ? "w-60" : "w-16"
-      } transition-all duration-300 fixed h-full bg-white  flex flex-col gap-y-4 justify-start items-center overflow-x-auto border-r border-[#DBDBDB]`}
+      } transition-all duration-300 fixed h-full bg-white  flex flex-col gap-y-4 justify-start items-center overflow-x-auto border-r border-[#DBDBDB] z-50`}
     >
       {/* TOP LOGO */}
       <div

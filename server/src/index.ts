@@ -5,7 +5,9 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-
+import http from "http";
+import { Server } from "socket.io";
+import { initMessageSocket } from "./sockets/messageSocket";
 
 /* ROUTE IMPORTS */
 import projectRoutes from "./routes/projectRoutes";
@@ -14,6 +16,8 @@ import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
 import refreshTokenRoutes from "./routes/refreshTokenRoutes";
 import teamRoutes from "./routes/teamRoutes";
+import { PrismaClient } from "@prisma/client";
+import messageRoutes from "./routes/messageRouter";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -28,6 +32,21 @@ app.use(cors({
   origin: process.env.FRONTEND_URL, 
   credentials: true, 
 }));
+
+const prisma = new PrismaClient();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+/* SOCKET.IO */
+initMessageSocket(io);
+
+
 /* COOKIES */
 app.use(cookieParser());
 
@@ -44,6 +63,9 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/teams", teamRoutes);
+app.use("/api/messages", messageRoutes);
+
+
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;
 
@@ -51,6 +73,10 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
+/* Socket.io server */
+server.listen(9000, () => {
+  console.log(`Server listening on port 9000`);
+});
 
 
 

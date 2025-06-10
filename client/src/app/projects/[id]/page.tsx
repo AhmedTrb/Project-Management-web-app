@@ -10,19 +10,23 @@ import Graph from '../GraphView/Graph';
 import ListView from '../ListView/List';
 import { useGetProjectByIdQuery, useGetProjectTasksQuery, useGetProjectTeamMembersQuery } from '@/state/api';
 import InviteMemberModal from '@/components/InviteMemberModal';
-import { CircularProgress } from '@mui/material';
+import GanttGraph from '../GanttView/Gantt';
+import Loader from '@/components/Loader/Loader';
 
 
 const ProjectPage = () => {
   const { id } = useParams<{ id: string }>();
 
+  const { data: project, isLoading, isError} = useGetProjectByIdQuery({projectId: id});
+  const {data:projectTeamMembers} = useGetProjectTeamMembersQuery({projectId: id});
+  const { data: tasks, isLoading: isLoadingTasks } = useGetProjectTasksQuery({ projectId: id });
   
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isActiveTab, setIsActiveTab] = useState("BOARD");
-  const { data: project} = useGetProjectByIdQuery({projectId: id});
-  const {data:projectTeamMembers} = useGetProjectTeamMembersQuery({projectId: id});
-  const {data:tasks, isLoading, isError} = useGetProjectTasksQuery({projectId: id});
+  const isAllLoading = isLoading || isLoadingTasks;
+  if (isAllLoading) return <Loader />;
+  
   return (
     <div className='flex flex-col justify-start w-full gap-y-6 p-10'>
 
@@ -65,18 +69,20 @@ const ProjectPage = () => {
           <button className={`text-md text-secondary-950 px-2 ${isActiveTab === "BOARD" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("BOARD")}>Board</button>
           <button className={`text-md text-secondary-950 px-2 ${isActiveTab === "LIST" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("LIST")}>List</button>
           <button className={`text-md text-secondary-950 px-2${isActiveTab === "GRAPH" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("GRAPH")}>Graph</button>
-          
+          <button className={`text-md text-secondary-950 px-2${isActiveTab === "GANTT" ? "font-semibold border-b-2 border-secondary-950" : ""}` } onClick={() => setIsActiveTab("GANTT")}>Gantt</button>
         </div>
-        {isError && <p className='text-red-500'>An error occurred</p>}
-        {isLoading ? <div className='flex justify-center items-center h-64 w-full'><CircularProgress /> </div> :
-        isActiveTab === "BOARD" && (
-          <Board id={id} setIsNewTaskModalOpen={setIsNewTaskModalOpen} tasks={tasks}/>
-        )}
-        {isActiveTab === "GRAPH" && (
-          <Graph id={id} />
+      
+        {isActiveTab === "BOARD" && (
+          <Board id={id} tasks={tasks} setIsNewTaskModalOpen={setIsNewTaskModalOpen}/>
         )}
         {isActiveTab === "LIST" && (
           <ListView id={id} />
+        )}  
+        {isActiveTab === "GRAPH" && (
+          <Graph id={id} />
+        )}
+        {isActiveTab === "GANTT" && (
+          <GanttGraph  id={id} />
         )}  
         
       </div>

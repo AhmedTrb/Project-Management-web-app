@@ -2,17 +2,17 @@ export interface User {
   userId: number;
   email: string;
   username: string;
-  password?: string;
+  password?: string ;
   googleId?: string;
-  profilePictureUrl?: string;
+  profilePictureUrl: string;
   createdAt: Date;
   updatedAt: Date;
 
   teams?: TeamMember[];
   attachments?: Attachment[];
   comments?: Comment[];
-  assignedTasks?: Task[];
-  authoredTasks?: Task[];
+  assignedTasks?: Task[];      // relation "TaskAssignee"
+  authoredTasks?: Task[];      // relation "TaskAuthor"
   taskAssignments?: TaskAssignment[];
 }
 
@@ -30,7 +30,7 @@ export interface TeamMember {
   id: number;
   userId: number;
   teamId: number;
-  role: TeamMemberRole;
+  role: string;
   joinedAt: Date;
 
   user: User;
@@ -40,9 +40,9 @@ export interface TeamMember {
 export interface Project {
   id: number;
   name: string;
-  description?: string;
-  startDate?: Date;
-  endDate?: Date;
+  description?: string | null;
+  startDate?: Date | null;
+  endDate?: Date | null;
   status: string;
   createdAt: Date;
   updatedAt: Date;
@@ -50,35 +50,47 @@ export interface Project {
   teamId: number;
   team: Team;
   tasks?: Task[];
+
+  bestCaseDuration?: number ;
+  worstCaseDuration?: number ;
+  expectedDuration?: number ;
 }
 
 export interface Task {
   id: number;
   title: string;
   description?: string;
-  status?: string;
+  status?: string ;
   priority?: string;
   tags?: string;
-  startDate?: Date;
-  dueDate?: Date;
-  points?: number;
+  startDate?: Date ;
+  dueDate?: Date ;
+  points?: number ;
+  projectId: number;
+  authorUserId: number;
+  assignedUserId?: number | null;
   createdAt: Date;
   updatedAt: Date;
 
-  projectId: number;
-  authorUserId: number;
-  assignedUserId?: number;
-  degree: number;
-  duration?: number;
+  degree: number ;
+  duration: number;
 
-  project: Project;
-  author: User;
-  assignee?: User;
+  earliestStart?: number;
+  earliestFinish?: number;
+  latestStart?: number;
+  latestFinish?: number;
+  slack?: number;
+  isCriticalPath?: boolean;
+
   attachments?: Attachment[];
   comments?: Comment[];
   taskAssignments?: TaskAssignment[];
-  dependencies?: number[];
-  dependents?: TaskDependency[];
+  dependencies?: number[];     
+  dependents?: number[];     
+
+  project: Project;
+  author: User;
+  assignee?: User | null;
 }
 
 export interface TaskDependency {
@@ -103,7 +115,7 @@ export interface TaskAssignment {
 export interface Attachment {
   id: number;
   fileURL: string;
-  fileName?: string;
+  fileName?: string | null;
   taskId: number;
   uploadedById: number;
   createdAt: Date;
@@ -123,6 +135,15 @@ export interface Comment {
 
   task: Task;
   user: User;
+}
+export interface Message {
+  id: number;
+  text: string;
+  createdAt: Date;
+  senderId: number;
+  senderName: string;
+  senderAvatar: string | null;
+  teamId: number;
 }
 
   

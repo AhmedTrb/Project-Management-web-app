@@ -39,17 +39,14 @@ function HomePage() {
       <div>
         <div className="flex gap-x-4 justify-start items-start max-w-fit overflow-x-hidden gap-y-5 h-full overflow-y-visible scroll-smooth ">
         
-        {isLoadingProjects ? (
+        {isLoadingProjects && (
           <div className="flex justify-center items-center w-full h-full">
             <CircularProgress />
           </div>
-        ) : isErrorProjects ? (
-          <div className="text-center font-normal text-lg text-secondary-950">
+        ) }
+        {isErrorProjects && <div className="text-center font-normal text-lg text-secondary-950">
             Error loading projects
-          </div>
-        ) : (
-          <></>
-        )}
+          </div>}
         {!projects || !isLoadingProjects && projects.length === 0  ? <div className="text-center font-normal text-lg text-secondary-950">No projects Found</div> :
           projects.map((project: Project) => (
             <ProjectCard key={project.id} project={project} />

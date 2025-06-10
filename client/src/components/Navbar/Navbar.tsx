@@ -69,8 +69,8 @@ function Navbar() {
             )}
             <div
               className="relative "
-              onMouseEnter={() => setDropDownIsOpen(true)}
-              onMouseLeave={() => setDropDownIsOpen(false)}
+              onClick={() => setDropDownIsOpen(!dropDownIsOpen)}
+              
             >
               <ChevronDown
                 size={25}

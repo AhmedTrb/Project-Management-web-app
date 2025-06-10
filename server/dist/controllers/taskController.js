@@ -98,10 +98,11 @@ const updateTaskStatus = (req, res) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.updateTaskStatus = updateTaskStatus;
 const deleteTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { taskId, projectId } = req.params;
+    const { taskId } = req.params;
+    const { projectId } = req.query;
     try {
         yield prisma.task.delete({ where: { id: Number(taskId) } });
-        yield (0, mpm_1.calculateMPM)(parseInt(projectId)); // Recalculate MPM after deleting the task
+        yield (0, mpm_1.calculateMPM)(parseInt(String(projectId))); // Recalculate MPM after deleting the task
         res.status(204).send({ message: "Task deleted successfully" });
     }
     catch (error) {

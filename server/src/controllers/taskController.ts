@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 export const getProjectTasks = async (req: Request, res: Response): Promise<void> => {
     const { projectId } = req.params;
     try {
-        const tasks = await prisma.task.findMany({ where: { projectId: Number(projectId) } });
+        const tasks = await prisma.task.findMany({ where: { projectId: Number(projectId) }});
         res.json(tasks);
     } catch (error) {
         res.status(500).json({ message: "error retrieving tasks" });
@@ -107,10 +107,11 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
 };
 
 export const deleteTask = async (req:Request, res:Response): Promise<void> => {
-    const { taskId,projectId } = req.params;
+    const { taskId } = req.params;
+    const { projectId } = req.query;
     try {
         await prisma.task.delete({ where: { id: Number(taskId) } });
-        await calculateMPM(parseInt(projectId)); // Recalculate MPM after deleting the task
+        await calculateMPM(parseInt(String(projectId))); // Recalculate MPM after deleting the task
         res.status(204).send({message:"Task deleted successfully"});
     } catch (error:any) {
         res.status(500).json({ message: "error deleting task", error: error.message });

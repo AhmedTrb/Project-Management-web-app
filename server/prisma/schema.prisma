@@ -23,6 +23,7 @@ model User {
   assignedTasks     Task[]           @relation("TaskAssignee")
   authoredTasks     Task[]           @relation("TaskAuthor")
   taskAssignments   TaskAssignment[]
+  messages          Message[]
 }
 
 model Team {
@@ -32,15 +33,20 @@ model Team {
   projects  Project[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+
+  Message Message[]
 }
 model TeamMember {
-  id        Int   @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   userId    Int
   teamId    Int
-  role      String   
+  role      String
   joinedAt  DateTime @default(now())
+
   user      User     @relation(fields: [userId], references: [userId])
   team      Team     @relation(fields: [teamId], references: [id])
+
+  messages  Message[]
 
   @@unique([userId, teamId])
 }
@@ -126,6 +132,21 @@ model Attachment {
   updatedAt    DateTime @updatedAt
   task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   uploadedBy   User     @relation(fields: [uploadedById], references: [userId], onDelete: Cascade)
+}
+model Message {
+  id            Int         @id @default(autoincrement())
+  text          String
+  createdAt     DateTime    @default(now())
+  teamId        Int
+  userId        Int         
+  teamMemberId  Int
+  team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  author        TeamMember  @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [userId])
+
+  @@index([teamId])
+  @@index([teamMemberId])
+  @@index([userId])
 }
 
 model Comment {

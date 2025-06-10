@@ -1,153 +1,188 @@
 "use client";
-import { useGetUserTeamsQuery } from '@/state/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { useGetTeamMessagesQuery, useGetUserTeamsQuery } from '@/state/api';
 import { CircularProgress } from '@mui/material';
-import { MessageSquare, Mic, MoreVertical, Paperclip, Phone, Search, Send, Smile, User, Users, Video } from 'lucide-react'
-import React, { useState } from 'react'
+import { io, Socket } from 'socket.io-client';
+import { MessageSquare, MoreVertical, Paperclip, Search, Send, User, Users } from 'lucide-react';
+import { Team } from '@/app/types/types';
 
-type Props = {}
+import { Message } from '@/app/types/types';
+import { useAppSelector } from '../redux';
 
-export default function page({}: Props) {
-    const {data:teams, isLoading} = useGetUserTeamsQuery();
-    const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
-    const [message, setMessage] = useState("");
+export default function ChatPage() {
+  const { data: teams, isLoading } = useGetUserTeamsQuery();
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const socketRef = useRef<Socket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const handleTeamSelect = (teamId: number) => {
-        setSelectedTeamId(Number(teamId));
+  const currentUser = useAppSelector((state) => state.auth.user);
+
+  const { data: chatHistory, isLoading: chatHistoryLoading, isFetching: chatHistoryFetching } = useGetTeamMessagesQuery(
+    { teamId: String(selectedTeamId) },
+    { skip: selectedTeamId === null }
+  );
+
+  useEffect(() => {
+    if (chatHistory && !chatHistoryLoading && !chatHistoryFetching) {
+      setMessages(chatHistory);
+    }
+  }, [chatHistory, chatHistoryLoading, chatHistoryFetching]); // Depend on chatHistory and its loading/fetching states
+  // Setup Socket.IO and fetch history when team selected
+  useEffect(() => {
+    if (!selectedTeamId || !currentUser) return;
+
+    const socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:9000', {
+      withCredentials: true,
+      auth: {
+        userId: currentUser.userId // Send user ID during connection
+      }
+    });
+    
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.log('Connected to socket');
+      socket.emit('joinTeam', selectedTeamId);
+    });
+
+    socket.on('newMessage', (msg: Message) => {
+      setMessages(prev => [...prev, msg]);
+    });
+
+    socket.on('error', (error: { message: string }) => {
+      console.error('Socket error:', error);
+      // TODO: Add error toast or notification here
+    });
+
+    return () => {
+      socket?.disconnect();
+      setMessages([]);
     };
+  }, [selectedTeamId, currentUser]);
 
-    return (
-        <div className='flex w-full h-full'>
-            {/* Chats List */}
-            <div className='w-1/4 border-r-2 border-gray-200 flex flex-col'>
-                {/* Search Bar */}
-                <div className="relative px-4 py-2 border-b border-gray-200">
-                    <input
-                        type="text"
-                        placeholder="Search teams or projects..."
-                        className="w-full pl-12 pr-4 py-1 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-600"
-                        aria-label="Search teams"
-                    />
-                    <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-400 w-3 h-3" />
-                </div>
-                {/* Team Chat Cards */}
-                {isLoading ? <div className='flex justify-center items-center h-screen w-full'><CircularProgress/> </div> : teams?.map((team) => (
-                    <div 
-                        key={team.id} 
-                        className={`p-4 border-b border-gray-200 flex items-center space-x-4 cursor-pointer ${selectedTeamId === team.id ? 'bg-[#F5F5F5]' : ''}`}
-                        onClick={() => handleTeamSelect(team.id)}
-                    >
-                        <div className='w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center'>
-                            <Users className='w-6 h-6 text-gray-400' />
-                        </div>
-                        <div className='flex flex-col gap-y-1 w-[80%]'>
-                            <h3 className='text-sm font-semibold text-gray-950'>{team.teamName}</h3>
-                            <div className='flex justify-between items-center'>
-                                <p className='text-xs text-gray-500 overflow-ellipsis'>{team.members?.map((member) => member.user.username).join(', ')}</p>
-                                <div className='w-2 h-2 rounded-full bg-green-500'></div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+  // auto-scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-            {/* Chat Area */}
-            <div className='flex-1 flex flex-col h-full'>
-                {selectedTeamId ? (
-                    <>
-                        {/* Chat Header */}
-                        <div className='px-6 py-4 border-b border-gray-200 flex items-center justify-between'>
-                            <div className='flex items-center space-x-4'>
-                                <div className='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center'>
-                                    <Users className='w-5 h-5 text-gray-400' />
-                                </div>
-                                <div>
-                                    <h2 className='font-semibold text-gray-900'>
-                                        {teams?.find(team => team.id === selectedTeamId)?.teamName}
-                                    </h2>
-                                    <p className='text-xs text-gray-500'>
-                                        {teams?.find(team => team.id === selectedTeamId)?.members?.length} members
-                                    </p>
-                                </div>
-                            </div>
-                            <div className='flex items-center space-x-4'>
-                                <button className='p-2 rounded-full hover:bg-gray-100'>
-                                    <Phone className='w-5 h-5 text-gray-500' />
-                                </button>
-                                <button className='p-2 rounded-full hover:bg-gray-100'>
-                                    <Video className='w-5 h-5 text-gray-500' />
-                                </button>
-                                <button className='p-2 rounded-full hover:bg-gray-100'>
-                                    <MoreVertical className='w-5 h-5 text-gray-500' />
-                                </button>
-                            </div>
-                        </div>
+  const handleTeamSelect = (teamId: number) => {
+    setSelectedTeamId(teamId);
+  };
 
-                        {/* Chat Messages */}
-                        <div className='flex-1 p-6 overflow-y-auto'>
-                            <div className='space-y-6'>
-                                {/* Example messages - these would come from your data */}
-                                <div className='flex items-start space-x-3'>
-                                    <div className='w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center'>
-                                        <User className='w-4 h-4 text-blue-500' />
-                                    </div>
-                                    <div className='bg-gray-100 rounded-lg p-3 max-w-md'>
-                                        <p className='text-sm text-gray-900'>Hey team, I just finished the design for the landing page!</p>
-                                        <span className='text-xs text-gray-500 block mt-1'>10:32 AM</span>
-                                    </div>
-                                </div>
-                                <div className='flex items-start space-x-3 justify-end'>
-                                    <div className='bg-blue-500 rounded-lg p-3 max-w-md'>
-                                        <p className='text-sm text-white'>That looks great! Can you share the Figma link?</p>
-                                        <span className='text-xs text-blue-100 block mt-1'>10:34 AM</span>
-                                    </div>
-                                    <div className='w-8 h-8 rounded-full bg-green-100 flex items-center justify-center'>
-                                        <User className='w-4 h-4 text-green-500' />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+  const sendMessage = () => {
+    if (!message.trim() || !socketRef.current || !selectedTeamId || !currentUser) return;
+    
+    socketRef.current.emit('sendMessage', {
+      content: message.trim(),
+      teamId: selectedTeamId,
+      userId: currentUser.userId // Include userId in the payload
+    });
+    
+    setMessage('');
+  };
 
-                        {/* Message Input */}
-                        <div className='px-6 py-4 border-t border-gray-200'>
-                            <div className='flex items-center space-x-4'>
-                                <button className='p-2 rounded-full hover:bg-gray-100'>
-                                    <Paperclip className='w-5 h-5 text-gray-500' />
-                                </button>
-                                <div className='flex-1 relative'>
-                                    <input
-                                        type="text"
-                                        value={message}
-                                        onChange={(e) => setMessage(e.target.value)}
-                                        placeholder="Type a message..."
-                                        className='w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-600'
-                                    />
-                                    <div className='absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-2'>
-                                        <button className='p-1 rounded-full hover:bg-gray-100'>
-                                            <Smile className='w-5 h-5 text-gray-500' />
-                                        </button>
-                                        <button className='p-1 rounded-full hover:bg-gray-100'>
-                                            <Mic className='w-5 h-5 text-gray-500' />
-                                        </button>
-                                    </div>
-                                </div>
-                                <button className='p-3 rounded-full bg-blue-500 hover:bg-blue-600'>
-                                    <Send className='w-5 h-5 text-white' />
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <div className='flex-1 flex items-center justify-center'>
-                        <div className='text-center'>
-                            <div className='w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4'>
-                                <MessageSquare className='w-10 h-10 text-gray-400' />
-                            </div>
-                            <h3 className='text-lg font-semibold text-gray-900'>No chat selected</h3>
-                            <p className='text-sm text-gray-500 mt-2'>Select a team from the list to start chatting</p>
-                        </div>
-                    </div>
-                )}
-            </div>
+  return (
+    <div className='flex w-full h-screen'>
+      {/* Teams List */}
+      <div className='w-1/4 border-r-2 border-gray-200 flex flex-col h-full overflow-hidden'>
+        {/* Search */}
+        <div className='relative px-4 py-2 border-b border-gray-200 flex-shrink-0'>
+          <input
+            type='text'
+            placeholder='Search teams...'
+            className='w-full pl-12 pr-4 py-1 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-600'
+          />
+          <Search className='absolute left-8 top-1/2 -translate-y-1/2 text-gray-400 w-3 h-3' />
         </div>
-    );
+        {/* Teams list */}
+        <div className='flex-1 overflow-y-auto'>
+          {isLoading ? (
+            <div className='flex justify-center items-center h-full'>
+              <CircularProgress />
+            </div>
+          ) : (
+            teams?.map((team: Team) => (
+              <div
+                key={team.id}
+                onClick={() => handleTeamSelect(team.id)}
+                className={`p-4 h-20 border-b border-gray-200 flex items-center cursor-pointer ${selectedTeamId === team.id ? 'bg-[#F5F5F5]' : ''}`}
+              >
+                <Users className='w-6 h-6 text-gray-400' />
+                <h3 className='ml-4 text-sm font-semibold text-gray-900'>{team.teamName}</h3>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Chat Area */}
+      <div className='flex-1 flex flex-col h-screen'>
+        {selectedTeamId ? (
+          <>
+            {/* Header */}
+            <div className='px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0'>
+              <div className='flex items-center space-x-3'>
+                <Users className='w-8 h-8 text-gray-500' />
+                <h2 className='font-semibold'>{teams?.find((t) => t.id === selectedTeamId)?.teamName}</h2>
+              </div>
+              <MoreVertical className='w-5 h-5 text-gray-500' />
+            </div>
+
+            {/* Messages */}
+            <div className='flex-1 overflow-y-auto'>
+              <div className='p-6 space-y-4'>
+                {messages.length > 0 && messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex items-start ${msg.senderId === currentUser?.userId ? 'justify-end' : ''} space-x-3`}
+                  >
+                    {msg.senderId !== currentUser?.userId && (
+                      msg.senderAvatar ? 
+                        <img src={msg.senderAvatar} alt={msg.senderName} className="w-8 h-8 rounded-full" /> :
+                        <User className='w-5 h-5 text-gray-500' />
+                    )}
+                    <div className={`${msg.senderId === currentUser?.userId ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-900'} p-3 rounded-lg max-w-md`}> 
+                      <p className='text-sm'>{msg.text}</p>
+                      <span className='text-xs text-gray-500 block mt-1'>
+                        {msg.senderName} • {new Date(msg.createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    {msg.senderId === currentUser?.userId && (
+                      msg.senderAvatar ? 
+                        <img src={msg.senderAvatar} alt={msg.senderName} className="w-8 h-8 rounded-full" /> :
+                        <User className='w-5 h-5 text-gray-500' />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className='px-6 py-4 border-t border-gray-200 flex-shrink-0'>
+              <div className='flex items-center space-x-3'>
+                <Paperclip className='w-5 h-5 text-gray-500' />
+                <input
+                  type='text'
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                  placeholder='Type a message...'
+                  className='flex-1 pl-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-600'
+                />
+                <Send onClick={sendMessage} className='w-6 h-6 text-blue-600 cursor-pointer' />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className='flex-1 flex items-center justify-center'>
+            <MessageSquare className='w-16 h-16 text-gray-400' />
+            <p className='mt-2 text-gray-500'>Select a team to start chatting</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
