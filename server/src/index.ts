@@ -35,6 +35,8 @@ app.use(cors({
 
 const prisma = new PrismaClient();
 const server = http.createServer(app);
+
+
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL,
@@ -73,10 +75,6 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
-/* Socket.io server */
-server.listen(9000, () => {
-  console.log(`Server listening on port 9000`);
-});
 
 
 
