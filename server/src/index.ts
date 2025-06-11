@@ -33,7 +33,6 @@ app.use(cors({
   credentials: true, 
 }));
 
-const prisma = new PrismaClient();
 const server = http.createServer(app);
 
 
@@ -71,7 +70,7 @@ app.use("/api/messages", messageRoutes);
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 

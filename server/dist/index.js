@@ -20,7 +20,6 @@ const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const refreshTokenRoutes_1 = __importDefault(require("./routes/refreshTokenRoutes"));
 const teamRoutes_1 = __importDefault(require("./routes/teamRoutes"));
-const client_1 = require("@prisma/client");
 const messageRouter_1 = __importDefault(require("./routes/messageRouter"));
 /* CONFIGURATIONS */
 dotenv_1.default.config();
@@ -35,7 +34,6 @@ app.use((0, cors_1.default)({
     origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
-const prisma = new client_1.PrismaClient();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
@@ -62,10 +60,6 @@ app.use("/api/teams", teamRoutes_1.default);
 app.use("/api/messages", messageRouter_1.default);
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server running on port ${port}`);
-});
-/* Socket.io server */
-server.listen(9000, () => {
-    console.log(`Server listening on port 9000`);
 });
