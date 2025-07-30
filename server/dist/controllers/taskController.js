@@ -100,8 +100,8 @@ const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 data: taskDependencies,
             });
         }
-        res.status(201).json(newTask);
         yield (0, mpm_1.calculateMPM)(parseInt(projectId)); // Recalculate MPM after creating the task
+        res.status(201).json(newTask);
     }
     catch (error) {
         console.error("Error creating task:", error);

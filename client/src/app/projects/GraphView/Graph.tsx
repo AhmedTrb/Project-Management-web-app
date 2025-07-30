@@ -97,7 +97,7 @@ TaskNodeCard.displayName = 'TaskNodeCard';
 export default function Graph({ id }: Props) {
   // All hooks must be called unconditionally at the top level
   const { data: tasks, isLoading: tasksLoading, isError: tasksError } = useGetProjectTasksQuery({ projectId: id });
-  const { data: dependencies, isLoading: dependenciesLoading, isError: dependenciesError } = useGetProjectDependenciesQuery({ projectId: id }); // Renamed isLoading/isError to avoid conflict
+  const { data: dependencies, isLoading: dependenciesLoading, isError: dependenciesError } = useGetProjectDependenciesQuery({ projectId: id }); 
 
   // Derived loading and error states after all hooks are called
   const overallLoading = tasksLoading || dependenciesLoading;

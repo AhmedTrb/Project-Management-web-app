@@ -111,8 +111,8 @@ export const createTask = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(201).json( newTask );
     await calculateMPM(parseInt(projectId)); // Recalculate MPM after creating the task
+    res.status(201).json( newTask );
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).json({ error: "An error occurred while creating the task." });

@@ -2,16 +2,19 @@ import { PrismaClient } from "@prisma/client";
 import { addDays } from "../utils/date";
 
 const prisma = new PrismaClient();
-type TaskLink = { 
-  id: number;
-  duration: number;
-  neighborIds: number[];
-  neighborDates: Date[];
-};
 
 // Forward‐BFS: push all dependents of `startTaskId`
 export async function pushDependents(startTaskId: number) {
-  const queue: number[] = [startTaskId];
+  // Start with its direct dependents, not itself
+  const task = await prisma.task.findUnique({
+    where: { id: startTaskId },
+    select: { dependents: { select: { dependentTaskId: true } } }
+  })!;
+
+  if (!task || task.dependents.length === 0) {
+    return;
+  }
+  const queue: number[] = task.dependents.map(d => d.dependentTaskId);
   const seen = new Set<number>();
 
   while (queue.length) {
@@ -48,10 +51,18 @@ export async function pushDependents(startTaskId: number) {
   }
 }
 
-// Backward‐BFS: pull all prerequisites of `startTaskId`
-// only call this if the moved task was shifted earlier
 export async function pullPrerequisites(startTaskId: number) {
-  const queue: number[] = [startTaskId];
+  // Start with its direct prerequisites, not itself
+  const startDeps  = await prisma.task.findUnique({
+    where: { id: startTaskId },
+    select: { dependencies: { select: { prerequisiteTaskId: true } } }
+  })!;
+
+  if (!startDeps || startDeps.dependencies.length === 0) {
+    return;
+  }
+
+  const queue: number[] = startDeps?.dependencies.map(d => d.prerequisiteTaskId);
   const seen = new Set<number>();
 
   while (queue.length) {
@@ -86,6 +97,7 @@ export async function pullPrerequisites(startTaskId: number) {
     queue.push(...node.dependencies.map(d => d.prerequisiteTaskId));
   }
 }
+
 
 // Master function: updates the moved task, then push/pull neighbors
 export async function rescheduleGraph(

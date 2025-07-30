@@ -18,7 +18,15 @@ const prisma = new client_1.PrismaClient();
 // Forward‐BFS: push all dependents of `startTaskId`
 function pushDependents(startTaskId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const queue = [startTaskId];
+        // Start with its direct dependents, not itself
+        const task = yield prisma.task.findUnique({
+            where: { id: startTaskId },
+            select: { dependents: { select: { dependentTaskId: true } } }
+        });
+        if (!task || task.dependents.length === 0) {
+            return;
+        }
+        const queue = task.dependents.map(d => d.dependentTaskId);
         const seen = new Set();
         while (queue.length) {
             const id = queue.shift();
@@ -52,11 +60,17 @@ function pushDependents(startTaskId) {
         }
     });
 }
-// Backward‐BFS: pull all prerequisites of `startTaskId`
-// only call this if the moved task was shifted earlier
 function pullPrerequisites(startTaskId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const queue = [startTaskId];
+        // Start with its direct prerequisites, not itself
+        const startDeps = yield prisma.task.findUnique({
+            where: { id: startTaskId },
+            select: { dependencies: { select: { prerequisiteTaskId: true } } }
+        });
+        if (!startDeps || startDeps.dependencies.length === 0) {
+            return;
+        }
+        const queue = startDeps === null || startDeps === void 0 ? void 0 : startDeps.dependencies.map(d => d.prerequisiteTaskId);
         const seen = new Set();
         while (queue.length) {
             const id = queue.shift();

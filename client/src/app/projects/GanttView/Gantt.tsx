@@ -24,7 +24,7 @@ const getStylesForStatus = (
     case "To Do":
       return {
         backgroundColor: "red-400",
-        progressColor: "red-400",
+        progressColor: "red-600",
         progressSelectedColor: "red-400",
       }
     case "In Progress":
@@ -39,11 +39,11 @@ const getStylesForStatus = (
         progressColor: "yellow-500",
         progressSelectedColor: "yellow-500",
       }
-    case "Done":
+    case "Completed":
       return {
-        backgroundColor: "green-700",
-        progressColor: "green-700",
-        progressSelectedColor: "green-800",
+        backgroundColor: "green-500",
+        progressColor: "green-500",
+        progressSelectedColor: "green-500",
       }
     default:
       return {
@@ -90,7 +90,6 @@ export default function GanttChart({ id, projectTasks }: Props) {
     const bgHex = getHexFromTailwindColor(isSelected ? progressSelectedColor : backgroundColor)
     const progressHex = getHexFromTailwindColor(isSelected ? progressSelectedColor : progressColor)
     const progressSelectedHex = getHexFromTailwindColor(progressSelectedColor)
-
     return {
       start: startDate,
       end: endDate,
@@ -99,9 +98,7 @@ export default function GanttChart({ id, projectTasks }: Props) {
       type: "task",
       progress: getProgressByStatus(task.status),
       isDisabled: false,
-      dependencies: projectDependencies
-        ?.filter((dep) => dep.dependentTaskId === task.id)
-        ?.map((dep) => String(dep.prerequisiteTaskId)) || [],
+      dependencies: projectDependencies?.filter((dep) => dep.dependentTaskId === task.id)?.map((dep) => String(dep.prerequisiteTaskId)) || [],
       styles: {
         backgroundColor: bgHex,
         progressColor: progressHex,
@@ -110,7 +107,7 @@ export default function GanttChart({ id, projectTasks }: Props) {
     }
   })
 
-
+  
   const handleTaskDateChange = useCallback(
     (task: GanttTask, _children: GanttTask[]) => {
       // fire the RTK‑Query mutation on the one moved task
@@ -150,7 +147,7 @@ export default function GanttChart({ id, projectTasks }: Props) {
       </div>
 
       {/* Gantt Chart */}
-      <div className="flex-1 w-full">
+      <div className="flex-1 h-full">
         <Gantt
           tasks={ganttTasks}
           viewMode={viewMode}
@@ -164,9 +161,9 @@ export default function GanttChart({ id, projectTasks }: Props) {
           handleWidth={8}
           fontFamily="Inter, system-ui, sans-serif"
           fontSize="14px"
-          arrowColor={getHexFromTailwindColor("secondary-900")}
+          arrowColor={getHexFromTailwindColor("secondary-950")}
           arrowIndent={20}
-          todayColor={getHexFromTailwindColor("primary-600")}
+          todayColor={getHexFromTailwindColor("primary-400")}
           TooltipContent={({ task, fontSize, fontFamily }) => (
             <div
               className="bg-white p-3 rounded-lg shadow-lg border border-gray-200 max-w-xs"
