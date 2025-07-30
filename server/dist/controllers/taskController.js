@@ -9,15 +9,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTaskById = exports.getUserTasks = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getProjectTasks = void 0;
+exports.rescheduleTask = exports.getTaskById = exports.getUserTasks = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getProjectTasks = void 0;
 const client_1 = require("@prisma/client");
 const jwt_1 = require("../utils/jwt");
-const mpm_1 = require("../utils/mpm"); // Assuming this is the file where calculateTaskRanks is defined
+const mpm_1 = require("../utils/mpm");
+const scheduler_1 = require("../utils/scheduler");
 const prisma = new client_1.PrismaClient();
 const getProjectTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { projectId } = req.params;
     try {
-        const tasks = yield prisma.task.findMany({ where: { projectId: Number(projectId) } });
+        const tasks = yield prisma.task.findMany({
+            where: { projectId: Number(projectId) },
+            include: {
+                taskAssignments: {
+                    include: {
+                        user: {
+                            select: {
+                                userId: true,
+                                username: true,
+                                profilePictureUrl: true
+                            }
+                        }
+                    }
+                },
+                author: {
+                    select: {
+                        userId: true,
+                        username: true,
+                        email: true,
+                        profilePictureUrl: true
+                    }
+                },
+            }
+        });
         res.json(tasks);
     }
     catch (error) {
@@ -140,3 +164,20 @@ const getTaskById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getTaskById = getTaskById;
+const rescheduleTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const taskId = Number(req.params.taskId);
+    const { projectId, newStartDate, newDueDate } = req.body;
+    const start = new Date(newStartDate);
+    const due = new Date(newDueDate);
+    if (isNaN(start.getTime()) || isNaN(due.getTime())) {
+        return res.status(400).json({ error: "Invalid date format" });
+    }
+    try {
+        yield (0, scheduler_1.rescheduleGraph)(Number(projectId), taskId, start, due);
+        res.json({ message: "Task and dependents rescheduled" });
+    }
+    catch (err) {
+        res.status(500).json({ message: "Reschedule failed", error: err.message });
+    }
+});
+exports.rescheduleTask = rescheduleTask;

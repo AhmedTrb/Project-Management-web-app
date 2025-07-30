@@ -356,10 +356,23 @@ export const api = createApi({
       }),
       providesTags: ["Dependencies"],
     }),
+    // Reschedule task and its dependents
+    rescheduleTask: build.mutation<void,{ projectId: string; taskId: string; newStartDate: string; newDueDate: string }>({
+  query: ({ projectId,taskId, newStartDate, newDueDate }) => ({
+    url: `/api/tasks/${taskId}/reschedule`,
+    method: "POST",
+    body: { projectId,newStartDate, newDueDate },
+  }),
+  // invalidate both the project list and this specific task
+  invalidatesTags: (result, error, { projectId, taskId }) => [
+    { type: "Tasks", id: `LIST-${projectId}` },
+    { type: "Tasks", id: taskId },
+  ],}),
   }),
 });
 
 export const {
+  useRescheduleTaskMutation,
   useGetTeamMessagesQuery,
   useGetTaskAssigneesQuery,
   useAssignUserToTaskMutation,

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { PrismaClient} from "@prisma/client";
 import { verifyAccessToken } from "../utils/jwt";
-import {calculateMPM} from "../utils/mpm"; // Assuming this is the file where calculateTaskRanks is defined
+import {calculateMPM} from "../utils/mpm"; 
+import { rescheduleGraph } from "../utils/scheduler";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,30 @@ const prisma = new PrismaClient();
 export const getProjectTasks = async (req: Request, res: Response): Promise<void> => {
     const { projectId } = req.params;
     try {
-        const tasks = await prisma.task.findMany({ where: { projectId: Number(projectId) }});
+        const tasks = await prisma.task.findMany({ 
+            where: { projectId: Number(projectId) },
+            include: { 
+                taskAssignments: {
+                    include: {
+                        user: { 
+                            select: { 
+                                userId: true, 
+                                username: true, 
+                                profilePictureUrl: true 
+                            } 
+                        }
+                    }
+                },
+                author: { 
+                    select: { 
+                        userId: true, 
+                        username: true, 
+                        email: true, 
+                        profilePictureUrl: true 
+                    } 
+                },
+            }
+        });
         res.json(tasks);
     } catch (error) {
         res.status(500).json({ message: "error retrieving tasks" });
@@ -147,7 +171,31 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
+export const rescheduleTask = async (req: Request, res: Response) => {
+  const taskId = Number(req.params.taskId);
+  const {projectId ,newStartDate, newDueDate } = req.body as {
+    projectId: string,
+    newStartDate: string;
+    newDueDate:   string;
+  };
+  const start = new Date(newStartDate);
+  const due = new Date(newDueDate);
 
+  if (isNaN(start.getTime()) || isNaN(due.getTime())) {
+    return res.status(400).json({ error: "Invalid date format" });
+  }
+  try {
+    await rescheduleGraph(
+      Number(projectId),
+      taskId,
+      start,
+      due
+    );
+    res.json({message: "Task and dependents rescheduled" });
+  } catch (err: any) {
+    res.status(500).json({ message: "Reschedule failed", error: err.message });
+  }
+};
 
 
 

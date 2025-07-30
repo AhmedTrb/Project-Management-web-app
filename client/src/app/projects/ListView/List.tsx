@@ -2,6 +2,7 @@ import React from 'react'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 import { useGetProjectTasksQuery } from '@/state/api';
 import Loader from '@/components/Loader/Loader';
+import { TaskAssignment } from '@/app/types/types';
 
 
 
@@ -35,7 +36,8 @@ export default function ListView({id}: Props) {
     { field: 'priority', headerName: 'Priority', width: 100, renderCell: (params) => (
       <span className={`h-5 px-1 py-0.5 rounded text-sm font-normal text-center ${priorityColorMap[params.value.toLowerCase() as keyof typeof priorityColorMap]}`}>{params.value.toLowerCase()}</span>
     )},
-    { field: 'dueDate', headerName: 'Due Date', width: 150,renderCell:(prev)=><span className='text-sm font-normal'>{new Date(prev.value).toLocaleDateString()}</span> },
+    { field: 'startDate', headerName: 'start Date', width: 120,renderCell:(prev)=><span className='text-sm font-normal'>{new Date(prev.value).toLocaleDateString()}</span> },
+    { field: 'dueDate', headerName: 'Due Date', width: 120,renderCell:(prev)=><span className='text-sm font-normal'>{new Date(prev.value).toLocaleDateString()}</span> },
   ];
   const dataGridClassNames ="border border-gray-200 bg-white shadow dark:border-stroke-dark dark:bg-dark-secondary dark:text-gray-200";
   return ( 

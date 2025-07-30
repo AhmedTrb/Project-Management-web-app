@@ -23,7 +23,6 @@ import {
   toggleSidebarOpen,
 } from "@/state/globalSlice";
 
-
 const Sidebar = () => {
   const { data: projects } = useGetProjectsQuery();
   const dispatch = useAppDispatch();
@@ -31,8 +30,10 @@ const Sidebar = () => {
   return (
     <div
       className={`${
-        isSidebarOpen ? "w-60" : "w-16"
-      } transition-all duration-300 fixed h-full bg-white  flex flex-col gap-y-4 justify-start items-center overflow-x-auto border-r border-[#DBDBDB] z-50`}
+        isSidebarOpen ? "w-65" : "w-16"
+      } sticky top-0 h-screen bg-white border-r border-[#DBDBDB] z-20
+     transition-all duration-300 ease-in-out 
+     flex flex-col gap-y-4 justify-start items-center overflow-y-auto`}
     >
       {/* TOP LOGO */}
       <div
@@ -212,11 +213,13 @@ const ProjectItem = ({
           <div className=" z-50 absolute  top-7 right-0 w-2/3 p-1 bg-white rounded-md shadow-md flex flex-col gap-y-1">
             <p
               className="text-sm cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-300 hover:bg-opacity-40 rounded-md px-2 py-1 w-full"
-              onClick={()=>deleteProject({projectId: projectId})}
+              onClick={() => deleteProject({ projectId: projectId })}
             >
               Delete
             </p>
-            <p className="text-sm  text-gray-500 hover:text-gray-950 hover:bg-gray-100 rounded-md px-2 py-1 cursor-pointer">Open</p>
+            <p className="text-sm  text-gray-500 hover:text-gray-950 hover:bg-gray-100 rounded-md px-2 py-1 cursor-pointer">
+              Open
+            </p>
           </div>
         )}
       </div>

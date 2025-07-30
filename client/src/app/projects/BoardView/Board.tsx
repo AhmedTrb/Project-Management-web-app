@@ -150,14 +150,7 @@ const TaskCard = ({ task }: { task: Task }) => {
   const dispatch = useDispatch();
   const [deleteTask] = useDeleteTaskMutation();
 
-  const { data: taskAssignees } = useGetTaskAssigneesQuery(
-    {
-      taskId: String(task.id),
-    },
-    {
-      skip: !task.id,
-    }
-  );
+  
 
   const handleOpenTaskDetails = () => {
     dispatch(setSelectedTask(task));
@@ -241,8 +234,8 @@ const TaskCard = ({ task }: { task: Task }) => {
       </div>
       <div className="flex justify-between items-center">
         <div>
-          <AvatarGroup total={taskAssignees?.length} max={3} spacing={10}>
-            {taskAssignees?.map((teamMember) => (
+          <AvatarGroup total={task.taskAssignments?.length} max={3} spacing={10}>
+            {task.taskAssignments?.map((teamMember) => (
               <Avatar
                 key={teamMember.userId}
                 src={teamMember.user.profilePictureUrl}

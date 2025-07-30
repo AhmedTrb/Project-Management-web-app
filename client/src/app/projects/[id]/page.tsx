@@ -19,7 +19,7 @@ const ProjectPage = () => {
 
   const { data: project, isLoading, isError} = useGetProjectByIdQuery({projectId: id});
   const {data:projectTeamMembers} = useGetProjectTeamMembersQuery({projectId: id});
-  const { data: tasks, isLoading: isLoadingTasks } = useGetProjectTasksQuery({ projectId: id });
+  const { data: tasks, isLoading: isLoadingTasks } = useGetProjectTasksQuery({ projectId: id },{refetchOnMountOrArgChange: true, refetchOnReconnect: true});
   
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
@@ -82,7 +82,7 @@ const ProjectPage = () => {
           <Graph id={id} />
         )}
         {isActiveTab === "GANTT" && (
-          <GanttGraph  id={id} />
+          <GanttGraph  id={id} projectTasks={tasks} />
         )}  
         
       </div>
