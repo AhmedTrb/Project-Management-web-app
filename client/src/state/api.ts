@@ -1,4 +1,5 @@
 import {
+  Comment,
   Message,
   Project,
   Task,
@@ -74,7 +75,7 @@ const baseQueryWithReauth = async (
 export const api = createApi({
   baseQuery: baseQueryWithReauth,
   reducerPath: "api",
-  tagTypes: ["Projects", "Tasks", "Teams", "Users", "Dependencies","Messages"],
+  tagTypes: ["Projects", "Tasks", "Teams", "Users", "Dependencies","Messages","Comments"],
 
   /**
    * Defines API endpoints for performing various operations related to teams, users, projects, and tasks.
@@ -356,6 +357,34 @@ export const api = createApi({
       }),
       providesTags: ["Dependencies"],
     }),
+
+    // add comment to task
+  addCommentToTask: build.mutation<void, { taskId: string; content: string }>({
+  query: ({ taskId, content }) => ({
+    url: `/api/tasks/${taskId}/comment`,
+    method: "POST",
+    body: { content },
+  }),
+  invalidatesTags: (result, error, { taskId }) => [
+    { type: "Comments", id: taskId }, // ✅ triggers refetch of getTaskComments
+  ],
+}),
+
+  // get task comments
+  getTaskComments: build.query<Comment[], { taskId: string }>({
+  query: ({ taskId }) => ({
+    url: `/api/tasks/${taskId}/comments`,
+    method: "GET",
+  }),
+  providesTags: (result, error, { taskId }) =>
+    result
+      ? [
+          ...result.map((c) => ({ type: "Comments" as const, id: c.id })),
+          { type: "Comments" as const, id: taskId },
+        ]
+      : [{ type: "Comments" as const, id: taskId }],
+}),
+
     // Reschedule task and its dependents
     rescheduleTask: build.mutation<void,{ projectId: string; taskId: string; newStartDate: string; newDueDate: string }>({
   query: ({ projectId,taskId, newStartDate, newDueDate }) => ({
@@ -372,6 +401,8 @@ export const api = createApi({
 });
 
 export const {
+  useGetTaskCommentsQuery,
+  useAddCommentToTaskMutation,
   useRescheduleTaskMutation,
   useGetTeamMessagesQuery,
   useGetTaskAssigneesQuery,

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getProjectTasks, createTask, updateTaskStatus, deleteTask, getTaskById , getUserTasks, rescheduleTask} from "../controllers/taskController";
+import { getProjectTasks, createTask, updateTaskStatus, deleteTask, getTaskById , getUserTasks, rescheduleTask, addCommentToTask, getTaskComments} from "../controllers/taskController";
 import { authMiddleware } from "../middleware/auth";
 import { assignUserToTask, getTaskAssignees, removeUserFromTask } from "../controllers/taskAssignmentController";
 
@@ -14,6 +14,8 @@ router.get("/",getUserTasks);
 router.delete("/:taskId" ,deleteTask);
 router.get("/:taskId" ,getTaskById);
 router.post("/:taskId/reschedule", rescheduleTask);
+router.post("/:taskId/comment",addCommentToTask);
+router.get("/:taskId/comments", getTaskComments);
 
 // task assignments
 router.post('/assign/task', assignUserToTask);

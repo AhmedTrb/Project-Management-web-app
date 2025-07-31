@@ -32,6 +32,16 @@ export const getProjectTasks = async (req: Request, res: Response): Promise<void
                         profilePictureUrl: true 
                     } 
                 },
+                comments: {
+                    include: {
+                        user: {
+                            select: {
+                                username: true,
+                                profilePictureUrl: true
+                            }
+                        }
+                    }
+                }
             }
         });
         res.json(tasks);
@@ -40,6 +50,70 @@ export const getProjectTasks = async (req: Request, res: Response): Promise<void
     }
 };
 
+export const getTaskComments = async (req: Request, res: Response): Promise<void> => {
+    const { taskId } = req.params;
+
+    try {
+        // check if task exists with project and team info
+        const task = await prisma.task.findUnique({ 
+            where: { id: Number(taskId) },
+            include: {
+                project: {
+                    include: {
+                        team: true
+                    }
+                }
+            }
+        });
+
+        if (!task) {
+            res.status(404).json({ error: "Task not found" });
+            return;
+        }
+
+        // Get user ID from access token
+        const token = req.headers.authorization?.split(" ")[1];
+        const decoded = verifyAccessToken(token as string);
+
+        if (!decoded) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }
+        const userId = decoded?.userId;
+
+        // Check if user is part of the project's team
+        const teamMember = await prisma.teamMember.findFirst({
+            where: {
+                userId: Number(userId),
+                teamId: task.project.team.id
+            }
+        });
+
+        if (!teamMember) {
+            res.status(403).json({ error: "User is not a member of this project's team" });
+            return;
+        }
+
+        // Fetch comments with user information
+        const comments = await prisma.comment.findMany({ 
+            where: { taskId: Number(taskId) },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        profilePictureUrl: true
+                    }
+                }
+            }
+        });
+        res.json(comments);
+    } catch (error) {
+        console.error("Error retrieving comments:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving comments" , error: error });
+        }
+    }
+};
 
 export const createTask = async (req: Request, res: Response) => {
   try {
@@ -198,4 +272,29 @@ export const rescheduleTask = async (req: Request, res: Response) => {
 };
 
 
+export const addCommentToTask = async (req: Request, res: Response): Promise<void> => {
+  const { taskId } = req.params;
+  const { content } = req.body;
 
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    const decoded = verifyAccessToken(token as string);
+    const userId = decoded?.userId;
+
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const comment = await prisma.comment.create({
+      data: {
+        text:content,
+        taskId: Number(taskId),
+        userId: Number(userId),
+      },
+    });
+
+    res.status(201).json(comment);
+  } catch (error:any) {
+    res.status(500).json({ message: "Error adding comment", error: error.message });
+  }
+}

@@ -13,6 +13,8 @@ router.get("/", taskController_1.getUserTasks);
 router.delete("/:taskId", taskController_1.deleteTask);
 router.get("/:taskId", taskController_1.getTaskById);
 router.post("/:taskId/reschedule", taskController_1.rescheduleTask);
+router.post("/:taskId/comment", taskController_1.addCommentToTask);
+router.get("/:taskId/comments", taskController_1.getTaskComments);
 // task assignments
 router.post('/assign/task', taskAssignmentController_1.assignUserToTask);
 router.delete('/:taskId/users/:userId', taskAssignmentController_1.removeUserFromTask);

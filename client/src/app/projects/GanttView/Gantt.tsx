@@ -117,8 +117,12 @@ export default function GanttChart({ id, projectTasks }: Props) {
         newStartDate: task.start.toISOString(),
         newDueDate:   task.end.toISOString(),
       })
+
+      setTimeout(() => {
+        
+      }, 200);
     },
-    [rescheduleTask,id]
+    [rescheduleTask]
   )
 
   const handleTaskSelect = useCallback((task: GanttTask, isSelected: boolean) => {

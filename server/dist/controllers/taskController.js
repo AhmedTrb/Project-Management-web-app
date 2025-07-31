@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rescheduleTask = exports.getTaskById = exports.getUserTasks = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getProjectTasks = void 0;
+exports.addCommentToTask = exports.rescheduleTask = exports.getTaskById = exports.getUserTasks = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getTaskComments = exports.getProjectTasks = void 0;
 const client_1 = require("@prisma/client");
 const jwt_1 = require("../utils/jwt");
 const mpm_1 = require("../utils/mpm");
@@ -40,6 +40,16 @@ const getProjectTasks = (req, res) => __awaiter(void 0, void 0, void 0, function
                         profilePictureUrl: true
                     }
                 },
+                comments: {
+                    include: {
+                        user: {
+                            select: {
+                                username: true,
+                                profilePictureUrl: true
+                            }
+                        }
+                    }
+                }
             }
         });
         res.json(tasks);
@@ -49,6 +59,66 @@ const getProjectTasks = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getProjectTasks = getProjectTasks;
+const getTaskComments = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { taskId } = req.params;
+    try {
+        // check if task exists with project and team info
+        const task = yield prisma.task.findUnique({
+            where: { id: Number(taskId) },
+            include: {
+                project: {
+                    include: {
+                        team: true
+                    }
+                }
+            }
+        });
+        if (!task) {
+            res.status(404).json({ error: "Task not found" });
+            return;
+        }
+        // Get user ID from access token
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+        const decoded = (0, jwt_1.verifyAccessToken)(token);
+        if (!decoded) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }
+        const userId = decoded === null || decoded === void 0 ? void 0 : decoded.userId;
+        // Check if user is part of the project's team
+        const teamMember = yield prisma.teamMember.findFirst({
+            where: {
+                userId: Number(userId),
+                teamId: task.project.team.id
+            }
+        });
+        if (!teamMember) {
+            res.status(403).json({ error: "User is not a member of this project's team" });
+            return;
+        }
+        // Fetch comments with user information
+        const comments = yield prisma.comment.findMany({
+            where: { taskId: Number(taskId) },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        profilePictureUrl: true
+                    }
+                }
+            }
+        });
+        res.json(comments);
+    }
+    catch (error) {
+        console.error("Error retrieving comments:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving comments", error: error });
+        }
+    }
+});
+exports.getTaskComments = getTaskComments;
 const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -181,3 +251,28 @@ const rescheduleTask = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.rescheduleTask = rescheduleTask;
+const addCommentToTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { taskId } = req.params;
+    const { content } = req.body;
+    try {
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+        const decoded = (0, jwt_1.verifyAccessToken)(token);
+        const userId = decoded === null || decoded === void 0 ? void 0 : decoded.userId;
+        if (!userId) {
+            res.status(401).json({ error: "Unauthorized" });
+        }
+        const comment = yield prisma.comment.create({
+            data: {
+                text: content,
+                taskId: Number(taskId),
+                userId: Number(userId),
+            },
+        });
+        res.status(201).json(comment);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error adding comment", error: error.message });
+    }
+});
+exports.addCommentToTask = addCommentToTask;
