@@ -16,8 +16,8 @@ import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
 import refreshTokenRoutes from "./routes/refreshTokenRoutes";
 import teamRoutes from "./routes/teamRoutes";
-import { PrismaClient } from "@prisma/client";
 import messageRoutes from "./routes/messageRouter";
+import { swaggerSpec, swaggerUi } from "./swagger";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -69,6 +69,9 @@ app.use("/api/messages", messageRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;
+
+// Swagger docs route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

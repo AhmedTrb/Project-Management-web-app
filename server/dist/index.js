@@ -21,6 +21,7 @@ const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const refreshTokenRoutes_1 = __importDefault(require("./routes/refreshTokenRoutes"));
 const teamRoutes_1 = __importDefault(require("./routes/teamRoutes"));
 const messageRouter_1 = __importDefault(require("./routes/messageRouter"));
+const swagger_1 = require("./swagger");
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -60,6 +61,8 @@ app.use("/api/teams", teamRoutes_1.default);
 app.use("/api/messages", messageRouter_1.default);
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;
+// Swagger docs route
+app.use('/api-docs', swagger_1.swaggerUi.serve, swagger_1.swaggerUi.setup(swagger_1.swaggerSpec));
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

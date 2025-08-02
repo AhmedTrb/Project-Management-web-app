@@ -4,7 +4,17 @@ import { verifyAccessToken } from "../utils/jwt";
 import { TeamMemberRole } from "../utils/types";
 
 const prisma = new PrismaClient();
-
+/**
+ * @swagger
+ * /api/projects:
+ *   get:
+ *     summary: Get all projects
+ *     tags:
+ *       - Projects
+ *     responses:
+ *       200:
+ *         description: List of tasks
+ */
 export const getProjects = async (req: Request, res: Response): Promise<void> => {
     const token = req.headers.authorization?.split(' ')[1];
 
@@ -116,16 +126,73 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
 export const deleteProject = async (req: Request, res: Response): Promise<void> => {
     const { projectId } = req.params;
     try {
-        await prisma.project.delete({ where: { id: Number(projectId) } });
-        res.json({ message: "project deleted successfully" });
-    } catch (error:any) {
-        res.status(500).json({ message: "error deleting project", error: error.message });
+      const token = req.headers.authorization?.split(' ')[1];
+      const decoded = verifyAccessToken(token as string);
+      
+      if (!decoded) {
+        res.status(401).json({ message: "Unauthorized: User not authenticated" });
+        return;
+      }
+
+      const userId = Number(decoded.userId);
+
+      // Get the project with its teamId
+      const project = await prisma.project.findUnique({
+        where: { id: Number(projectId) },
+        select: { teamId: true }
+      });
+
+      if (!project) {
+        res.status(404).json({ message: "Project not found" });
+        return;
+      }
+
+      // Check if the user is the OWNER in the team
+      const teamMember = await prisma.teamMember.findFirst({
+        where: {
+          userId: userId,
+          teamId: project.teamId,
+          role: "OWNER"
+        }
+      });
+
+      if (!teamMember) {
+        res.status(403).json({ message: "Forbidden: Only the project owner can delete this project" });
+        return;
+      }
+
+      await prisma.project.delete({ where: { id: Number(projectId) } });
+      res.json({ message: "project deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "error deleting project", error: error.message });
     }
 }
 
 export const getProjectById = async (req: Request, res: Response): Promise<void> => {
     const { projectId } = req.params;
     try {
+      // Verify user
+      const token = req.headers.authorization?.split(' ')[1];
+      const decoded = verifyAccessToken(token as string);
+      
+      if (!decoded) {
+        res.status(401).json({ message: "Unauthorized: User not authenticated" });
+        return;
+      }
+
+      const userId = Number(decoded.userId);
+
+      // Check if user is part of the project team
+      const team = await prisma.team.findFirst({
+        where: {
+          members: { some: { userId: userId } },
+          projects: { some: { id: Number(projectId) } }
+        }
+      });
+      if (!team) {
+        res.status(403).json({ message: "Forbidden: User is not part of this project's team" });
+        return;
+      }
         const project = await prisma.project.findUnique({ where: { id: Number(projectId) } });
         res.json(project);
     } catch (error: any) {

@@ -14,6 +14,17 @@ const client_1 = require("@prisma/client");
 const jwt_1 = require("../utils/jwt");
 const types_1 = require("../utils/types");
 const prisma = new client_1.PrismaClient();
+/**
+ * @swagger
+ * /api/projects:
+ *   get:
+ *     summary: Get all projects
+ *     tags:
+ *       - Projects
+ *     responses:
+ *       200:
+ *         description: List of tasks
+ */
 const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
@@ -106,8 +117,37 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.createProject = createProject;
 const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const { projectId } = req.params;
     try {
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        const decoded = (0, jwt_1.verifyAccessToken)(token);
+        if (!decoded) {
+            res.status(401).json({ message: "Unauthorized: User not authenticated" });
+            return;
+        }
+        const userId = Number(decoded.userId);
+        // Get the project with its teamId
+        const project = yield prisma.project.findUnique({
+            where: { id: Number(projectId) },
+            select: { teamId: true }
+        });
+        if (!project) {
+            res.status(404).json({ message: "Project not found" });
+            return;
+        }
+        // Check if the user is the OWNER in the team
+        const teamMember = yield prisma.teamMember.findFirst({
+            where: {
+                userId: userId,
+                teamId: project.teamId,
+                role: "OWNER"
+            }
+        });
+        if (!teamMember) {
+            res.status(403).json({ message: "Forbidden: Only the project owner can delete this project" });
+            return;
+        }
         yield prisma.project.delete({ where: { id: Number(projectId) } });
         res.json({ message: "project deleted successfully" });
     }
@@ -117,8 +157,28 @@ const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.deleteProject = deleteProject;
 const getProjectById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const { projectId } = req.params;
     try {
+        // Verify user
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        const decoded = (0, jwt_1.verifyAccessToken)(token);
+        if (!decoded) {
+            res.status(401).json({ message: "Unauthorized: User not authenticated" });
+            return;
+        }
+        const userId = Number(decoded.userId);
+        // Check if user is part of the project team
+        const team = yield prisma.team.findFirst({
+            where: {
+                members: { some: { userId: userId } },
+                projects: { some: { id: Number(projectId) } }
+            }
+        });
+        if (!team) {
+            res.status(403).json({ message: "Forbidden: User is not part of this project's team" });
+            return;
+        }
         const project = yield prisma.project.findUnique({ where: { id: Number(projectId) } });
         res.json(project);
     }
