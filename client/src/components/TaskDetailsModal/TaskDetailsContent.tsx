@@ -41,21 +41,6 @@ const task = useAppSelector((state) => state.global.task);
           {formatDate(task.dueDate)}
         </div>
       )}
-      {/* Task dependencies */}
-      <div className="flex flex-col gap-2 text-secondary-950">
-        <span className="font-medium">Dependencies:</span>
-        {task?.dependencies && task.dependencies.length > 0 ? (
-          <ul className="list-disc pl-5">
-            {task.dependencies.map((dependency) => (
-              <li key={dependency.id} className="text-gray-800">
-                {dependency?.prerequisiteTask.title}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <span className="text-gray-800">No dependencies</span>  
-          )}
-      </div>
     </div>
   );
 };
