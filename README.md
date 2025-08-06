@@ -9,10 +9,13 @@ This project was inspired by a university course on Graph Theory, where I explor
 
 - Calculate the degree of each task based on its dependencies.
 - Determine the positioning of tasks in the graph view.
-- Improve the visualization of task dependencies for better project planning. 
+- Improve the visualization of task dependencies for better project planning.
+- Reschedule tasks dynamically – When a task is delayed or updated, its dependent tasks are automatically adjusted to maintain a consistent and valid project timeline, ensuring all constraints are respected.
 
 [VIDEO DEMO](https://drive.google.com/file/d/1nH3_EfDSxEBc-k4HovFmLGog7LNgxCe4/view?usp=sharing)
+
 [Live Demo website](https://project-management-web-app-lilac.vercel.app)
+
 - email : test@gmail.com
 - password : 1111
 *** 
@@ -38,7 +41,9 @@ Prisma ORM
 
 - Project & Task Management – Create and manage projects, assign tasks, and track progress.
 - Graph View (DAG Representation): Visualize project dependencies as a Directed Acyclic Graph (DAG) using topological sorting.
-- Team Collaboration: Assign team members to projects, manage roles, and send invite links via email.
+- Team Collaboration: Assign team members to projects, manage roles.
+- Task Rescheduling (Gantt View) – Reschedule tasks by dragging them on a Gantt chart. Updates automatically propagate to dependent tasks.
+- Real-Time Messaging – Collaborate with your team using built-in messaging within each project workspace.
 - Authentication & Authorization : Secure login with jwt Refresh and Access tokens
 - Responsive & Modern UI : Designed with TailwindCSS for a clean and intuitive user experience.
 
@@ -142,4 +147,11 @@ FRONTEND_URL=http://localhost:3000
 ![image](https://github.com/user-attachments/assets/cf75824e-a7da-4e8a-ad49-f267d6574099)
 #### Members Page :
 ![image](https://github.com/user-attachments/assets/f957f838-4aba-4e62-87b2-6b699bada2e5)
+
+#### Gantt View :
+<img width="1853" height="914" alt="image" src="https://github.com/user-attachments/assets/1e8772fd-5269-4689-90fd-da1467dbc675" />
+
+#### Team Messaging :
+<img width="1853" height="994" alt="image" src="https://github.com/user-attachments/assets/e29e7048-1a81-492a-87b0-79d71084822a" />
+
 
