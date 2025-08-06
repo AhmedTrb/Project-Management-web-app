@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getProjectTasks, createTask, updateTaskStatus, deleteTask, getTaskById , getUserTasks, rescheduleTask, addCommentToTask, getTaskComments} from "../controllers/taskController";
+import { getProjectTasks, createTask, updateTaskStatus, deleteTask, getTaskById , getUserTasks, rescheduleTask, addCommentToTask, getTaskComments, addTaskDependency} from "../controllers/taskController";
 import { authMiddleware } from "../middleware/auth";
 import { assignUserToTask, getTaskAssignees, removeUserFromTask } from "../controllers/taskAssignmentController";
 
@@ -318,4 +318,13 @@ router.delete('/:taskId/users/:userId', removeUserFromTask);
  *         description: Unauthorized
  */
 router.get('/:taskId/assignees', getTaskAssignees);
+/**
+ * @swagger
+ * /tasks/{taskId}/dependency:
+ *   post:
+ *     summary: Add a dependency to a task
+ *     tags: [Tasks]
+ */
+router.post('/:taskId/dependency', addTaskDependency);
+
 export default router;

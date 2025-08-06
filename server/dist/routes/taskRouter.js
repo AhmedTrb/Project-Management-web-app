@@ -306,4 +306,12 @@ router.delete('/:taskId/users/:userId', taskAssignmentController_1.removeUserFro
  *         description: Unauthorized
  */
 router.get('/:taskId/assignees', taskAssignmentController_1.getTaskAssignees);
+/**
+ * @swagger
+ * /tasks/{taskId}/dependency:
+ *   post:
+ *     summary: Add a dependency to a task
+ *     tags: [Tasks]
+ */
+router.post('/:taskId/dependency', taskController_1.addTaskDependency);
 exports.default = router;

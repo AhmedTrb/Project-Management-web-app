@@ -24,6 +24,9 @@ model User {
   authoredTasks     Task[]           @relation("TaskAuthor")
   taskAssignments   TaskAssignment[]
   messages          Message[]
+
+  timeOff           TimeOff[]
+  workingHours      UserWorkingHours?
 }
 
 model Team {
@@ -160,3 +163,36 @@ model Comment {
   user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
+/// Represents the “weekly calendar” for a user:  
+/// which days they normally work, and what hours on those days.
+model UserWorkingHours {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  // JSON object keyed by weekday name or index (0=Sunday…6=Saturday),
+  // with an array of “from–to” times in 24h HH:mm format.
+  // e.g.
+  // {
+  //   "1": [{ "from": "09:00", "to": "17:00" }],
+  //   "2": [{ "from": "09:00", "to": "17:00" }],
+  //   "...": […]
+  // }
+  weeklyHours Json
+  user     User     @relation(fields: [userId], references: [userId])
+  updatedAt DateTime @updatedAt
+}
+
+/// Represents a contiguous block of time the user is NOT available
+/// (vacation, doctor appointment, training, etc.).
+model TimeOff {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  /// Start of the block (inclusive)
+  startDate DateTime
+  /// End of the block (exclusive)
+  endDate   DateTime
+  type      String   // e.g. “vacation”, “sick”, “training”
+  note      String?
+
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

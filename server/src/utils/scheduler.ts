@@ -106,7 +106,7 @@ export async function rescheduleGraph(
   newStart: Date,
   newDue: Date
 ) {
-  // ⛳ Get the current task before updating
+  // Get the current task before updating
   const original = await prisma.task.findUnique({
     where: { id: taskId },
     select: { startDate: true }

@@ -30,7 +30,7 @@ export const TaskDetailsModal = () => {
         animate={{ x: "0%", opacity: 1 }} // Slide in to view
         exit={{ x: "100%", opacity: 0 }} // Slide out when closing
         transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
-        className="md:w-1/2 sm:w-1/2  w-full h-full rounded-tl-lg rounded-bl-lg bg-white p-4 shadow-lg flex flex-col justify-start gap-4 overflow-y-auto"
+        className="md:w-1/2 sm:w-1/2 lg:w-1/3  w-full h-full rounded-tl-lg rounded-bl-lg bg-white p-4 shadow-lg flex flex-col justify-start gap-4 overflow-y-auto"
       >
         {/* Header */}
         <div className="flex justify-between items-center border-b pb-2">

@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { Gantt, type Task as GanttTask, ViewMode } from "gantt-task-react"
 import "gantt-task-react/dist/index.css";
 import { Task as ProjectTask } from '@/app/types/types';
@@ -75,6 +75,7 @@ export default function GanttChart({ id, projectTasks }: Props) {
   const [rescheduleTask, { isLoading: isRescheduling, error: rescheduleError }] = useRescheduleTaskMutation();
   const { data: projectDependencies } = useGetProjectDependenciesQuery({ projectId: id }, { skip: !id })
 
+  // prepare tasks for Gantt chart
   const sortedTasks = [...(projectTasks || [])].sort((a, b) => (a.degree ?? 0) - (b.degree ?? 0))
 
   const ganttTasks: GanttTask[] = sortedTasks.map((task) => {
@@ -107,7 +108,8 @@ export default function GanttChart({ id, projectTasks }: Props) {
     }
   })
 
-  
+  // Handle task date changes
+  // This is called when a task is moved or resized in the Gantt chart
   const handleTaskDateChange = useCallback(
     (task: GanttTask, _children: GanttTask[]) => {
       // fire the RTK‑Query mutation on the one moved task
@@ -124,12 +126,12 @@ export default function GanttChart({ id, projectTasks }: Props) {
     },
     [rescheduleTask]
   )
-
+  // Handle task selection
   const handleTaskSelect = useCallback((task: GanttTask, isSelected: boolean) => {
     setSelectedId(isSelected ? task.id : null)
   }, [])
 
-  if (!projectTasks) return <Loader />
+  if (!projectTasks ) return <Loader />
 
   return (
     <div className="w-full h-full bg-white">
@@ -152,7 +154,7 @@ export default function GanttChart({ id, projectTasks }: Props) {
 
       {/* Gantt Chart */}
       <div className="flex-1 h-full">
-        <Gantt
+        <Gantt     
           tasks={ganttTasks}
           viewMode={viewMode}
           onDateChange={handleTaskDateChange}
@@ -167,7 +169,7 @@ export default function GanttChart({ id, projectTasks }: Props) {
           fontSize="14px"
           arrowColor={getHexFromTailwindColor("secondary-950")}
           arrowIndent={20}
-          todayColor={getHexFromTailwindColor("primary-400")}
+          todayColor={getHexFromTailwindColor("primary-200")}
           TooltipContent={({ task, fontSize, fontFamily }) => (
             <div
               className="bg-white p-3 rounded-lg shadow-lg border border-gray-200 max-w-xs"

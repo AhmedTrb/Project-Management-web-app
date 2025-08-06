@@ -2,9 +2,11 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   ReactFlow, Background, Controls, Handle, Position, MarkerType,
-  useEdgesState, useNodesState
+  useEdgesState, useNodesState,
+  addEdge,
+  Connection
 } from '@xyflow/react';
-import { useDeleteTaskMutation, useGetProjectDependenciesQuery, useGetProjectTasksQuery } from '@/state/api';
+import { useAddTaskDependencyMutation, useDeleteTaskMutation, useGetProjectDependenciesQuery, useGetProjectTasksQuery } from '@/state/api';
 import '@xyflow/react/dist/style.css';
 import { Task, TaskStatus } from '@/app/types/types';
 import { Ellipsis } from 'lucide-react';
@@ -98,16 +100,11 @@ export default function Graph({ id }: Props) {
   // All hooks must be called unconditionally at the top level
   const { data: tasks, isLoading: tasksLoading, isError: tasksError } = useGetProjectTasksQuery({ projectId: id });
   const { data: dependencies, isLoading: dependenciesLoading, isError: dependenciesError } = useGetProjectDependenciesQuery({ projectId: id }); 
-
+  const [addtaskDependency,error] = useAddTaskDependencyMutation();
   // Derived loading and error states after all hooks are called
   const overallLoading = tasksLoading || dependenciesLoading;
   const overallError = tasksError || dependenciesError;
 
-  
-
-  // Ensure tasks and dependencies are not undefined before using them
-  // This is crucial because if overallLoading/overallError is false,
-  // it implies data might be available, but RTK Query returns undefined initially.
   const resolvedTasks = tasks || [];
   const resolvedDependencies = dependencies || [];
 
@@ -152,7 +149,29 @@ export default function Graph({ id }: Props) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const onConnect = useCallback(
+  async (connection: Connection) => {
+    const { source, target } = connection;
+    const sourceNode = nodes.find((node) => node.id === source);
+    const targetNode = nodes.find((node) => node.id === target);
+    if (!sourceNode || !targetNode) return;
 
+    try {
+      await addtaskDependency({
+        source: String(sourceNode.data.id),
+        target: String(targetNode.data.id),
+        taskId: String(targetNode.data.id),
+      }).unwrap(); // this unwraps the promise and throws on error
+
+      // Only update edges if the dependency was successfully added
+      setEdges((eds) => addEdge(connection, eds));
+    } catch (error: any) {
+      console.error("Failed to add task dependency:", error);
+      
+    }
+  },
+  [setEdges, addtaskDependency, nodes]
+);
   const nodeTypes = useMemo(() => ({
     taskNode: (props: any) => <TaskNodeCard {...props} nodes={nodes} setNodes={setNodes} />
   }), [nodes, setNodes]);
@@ -166,6 +185,7 @@ export default function Graph({ id }: Props) {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onConnect={onConnect}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         defaultViewport={{ x: 50, y: 50, zoom: 0.7 }}

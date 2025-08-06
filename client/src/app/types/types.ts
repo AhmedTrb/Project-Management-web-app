@@ -85,8 +85,8 @@ export interface Task {
   attachments?: Attachment[];
   comments?: Comment[];
   taskAssignments?: TaskAssignment[];
-  dependencies?: number[];     
-  dependents?: number[];     
+  dependencies?: TaskDependency[];     
+  dependents?: TaskDependency[];     
 
   project: Project;
   author: User;

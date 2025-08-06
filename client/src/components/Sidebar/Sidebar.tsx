@@ -30,7 +30,7 @@ const Sidebar = () => {
   return (
     <div
       className={`${
-        isSidebarOpen ? "w-65" : "w-16"
+        isSidebarOpen ? "w-80" : "w-20"
       } sticky top-0 h-screen bg-white border-r border-[#DBDBDB] z-20
      transition-all duration-300 ease-in-out 
      flex flex-col gap-y-4 justify-start items-center overflow-y-auto`}

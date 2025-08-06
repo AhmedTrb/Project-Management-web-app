@@ -54,7 +54,7 @@ export const getAllTeams = async (req: Request, res: Response) => {
 
 // Add a member to a team
 export const addTeamMember = async (req: Request, res: Response) => {
-    const { teamId, userId, role = TeamMemberRole.MEMBER } = req.body;
+    const { teamId, userId, role } = req.body;
     const token = req.headers.authorization?.split(' ')[1];
     const decoded = verifyAccessToken(token as string);
     
@@ -64,17 +64,17 @@ export const addTeamMember = async (req: Request, res: Response) => {
 
     try {
         // Check if the requesting user is a team admin
-        const requestingUserMembership = await prisma.teamMember.findFirst({
-            where: {
-                teamId: Number(teamId),
-                userId: Number(decoded.userId),
-                role: TeamMemberRole.OWNER
-            }
-        });
+        // const requestingUserMembership = await prisma.teamMember.findFirst({
+        //     where: {
+        //         teamId: Number(teamId),
+        //         userId: Number(decoded.userId),
+        //         role: TeamMemberRole.OWNER
+        //     }
+        // });
 
-        if (!requestingUserMembership) {
-            return res.status(403).json({ error: 'Only team admins can add members' });
-        }
+        // if (!requestingUserMembership) {
+        //     return res.status(403).json({ error: 'Only team admins can add members' });
+        // }
 
         // Check if user is already a member
         const existingMember = await prisma.teamMember.findFirst({

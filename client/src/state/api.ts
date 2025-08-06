@@ -397,10 +397,25 @@ export const api = createApi({
     { type: "Tasks", id: `LIST-${projectId}` },
     { type: "Tasks", id: taskId },
   ],}),
+
+  // add task dependency
+  addTaskDependency: build.mutation<TaskDependency, { taskId: string; source: string; target: string }>({
+    query: ({ taskId, source, target }) => ({
+      url: `/api/tasks/${taskId}/dependency`,
+      method: "POST",
+      body: { source, target },
+    }),
+    invalidatesTags: (result, error, { taskId }) => [
+      { type: "Tasks", id: taskId },
+      { type: "Dependencies", id: `LIST-${taskId}` },
+    ],
   }),
+  }),
+  
 });
 
 export const {
+  useAddTaskDependencyMutation,
   useGetTaskCommentsQuery,
   useAddCommentToTaskMutation,
   useRescheduleTaskMutation,

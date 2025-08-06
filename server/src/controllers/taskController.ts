@@ -3,6 +3,7 @@ import { PrismaClient} from "@prisma/client";
 import { verifyAccessToken } from "../utils/jwt";
 import {calculateMPM} from "../utils/mpm"; 
 import { rescheduleGraph } from "../utils/scheduler";
+import { buildTaskGraph } from "../utils/buildTaskGraph";
 
 const prisma = new PrismaClient();
 
@@ -13,35 +14,45 @@ export const getProjectTasks = async (req: Request, res: Response): Promise<void
         const tasks = await prisma.task.findMany({ 
             where: { projectId: Number(projectId) },
             include: { 
-                taskAssignments: {
-                    include: {
-                        user: { 
-                            select: { 
-                                userId: true, 
-                                username: true, 
-                                profilePictureUrl: true 
-                            } 
-                        }
-                    }
-                },
-                author: { 
-                    select: { 
-                        userId: true, 
-                        username: true, 
-                        email: true, 
-                        profilePictureUrl: true 
-                    } 
-                },
-                comments: {
-                    include: {
-                        user: {
-                            select: {
-                                username: true,
-                                profilePictureUrl: true
-                            }
-                        }
-                    }
+          taskAssignments: {
+              include: {
+            user: { 
+                select: { 
+              userId: true, 
+              username: true, 
+              profilePictureUrl: true 
+                } 
+            }
+              }
+          },
+          author: { 
+              select: { 
+            userId: true, 
+            username: true, 
+            email: true, 
+            profilePictureUrl: true 
+              } 
+          },
+          comments: {
+              include: {
+            user: {
+                select: {
+              username: true,
+              profilePictureUrl: true
                 }
+            }
+              }
+          },
+          dependencies: { // This assumes your Prisma schema has a relation named 'prerequisiteTasks'
+              include: {
+            prerequisiteTask: {
+                select: {
+              id: true,
+              title: true
+                }
+            }
+              }
+          }
             }
         });
         res.json(tasks);
@@ -184,8 +195,9 @@ export const createTask = async (req: Request, res: Response) => {
         data: taskDependencies,
       });
     }
-
-    await calculateMPM(parseInt(projectId)); // Recalculate MPM after creating the task
+    // build graph and recalculate MPM
+    const { adjList, nodes } = await buildTaskGraph(parseInt(projectId));
+    await calculateMPM(adjList,nodes); // Recalculate MPM after creating the task
     res.status(201).json( newTask );
   } catch (error) {
     console.error("Error creating task:", error);
@@ -209,7 +221,10 @@ export const deleteTask = async (req:Request, res:Response): Promise<void> => {
     const { projectId } = req.query;
     try {
         await prisma.task.delete({ where: { id: Number(taskId) } });
-        await calculateMPM(parseInt(String(projectId))); // Recalculate MPM after deleting the task
+        // Recalculate MPM after deleting the task
+        const { adjList, nodes } = await buildTaskGraph(parseInt(String(projectId)));
+        await calculateMPM(adjList, nodes);
+        
         res.status(204).send({message:"Task deleted successfully"});
     } catch (error:any) {
         res.status(500).json({ message: "error deleting task", error: error.message });
@@ -298,3 +313,61 @@ export const addCommentToTask = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ message: "Error adding comment", error: error.message });
   }
 }
+
+
+export const addTaskDependency = async (req: Request, res: Response): Promise<void> => {
+  const { taskId } = req.params;
+  const { source, target } = req.body;
+
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    const decoded = verifyAccessToken(token as string);
+    const userId = decoded?.userId;
+
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // check if user part of the project team
+    const task = await prisma.task.findUnique({
+      where: { id: Number(taskId) },
+      include: { project: { include: { team: true } } },
+    });
+
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+
+    const teamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: Number(userId),
+        teamId: task.project.teamId,
+      },
+    });
+
+    if (!teamMember) {
+      res.status(403).json({ error: "Forbidden: Only team members can add task dependencies" });
+      return;
+    }
+    // build graph ans Recalculate MPM after adding the dependency
+    const { adjList, nodes } = await buildTaskGraph(task.projectId);
+    nodes.get(Number(taskId))!.dependencies.push(Number(source));
+    adjList.get(Number(source))!.push(Number(target));
+    // Recalculate MPM after adding the dependency to check if new graph contains a cycle or not 
+    await calculateMPM(adjList, nodes);
+
+    // add the dependency in the database if no cycle is detected
+    const dependency = await prisma.taskDependency.create({
+      data: {
+        dependentTaskId: Number(target),
+        prerequisiteTaskId: Number(source),
+      },
+    });
+    
+    
+    res.status(201).json(dependency);
+  } catch (error:any) {
+    res.status(500).json({ message: "Error adding task dependency", error: error.message });
+  } 
+};

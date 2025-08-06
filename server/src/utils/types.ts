@@ -7,14 +7,20 @@ export enum TeamMemberRole {
 
 export interface TaskNode {
   taskId: number;
-  degree: number;
   duration: number;
+  degree: number;
   earliestStart: number;
   earliestFinish: number;
   latestStart: number;
   latestFinish: number;
   slack: number;
-  isCriticalPath?: boolean;
+  isCriticalPath: boolean;
   dependencies: number[];
   dependents: number[];
+}
+
+export interface TaskGraph {
+  nodes: Map<number, TaskNode>;
+  adjList: Map<number, number[]>;
+  reverseAdjList: Map<number, number[]>;
 }

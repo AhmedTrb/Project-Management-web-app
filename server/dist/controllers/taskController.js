@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addCommentToTask = exports.rescheduleTask = exports.getTaskById = exports.getUserTasks = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getTaskComments = exports.getProjectTasks = void 0;
+exports.addTaskDependency = exports.addCommentToTask = exports.rescheduleTask = exports.getTaskById = exports.getUserTasks = exports.deleteTask = exports.updateTaskStatus = exports.createTask = exports.getTaskComments = exports.getProjectTasks = void 0;
 const client_1 = require("@prisma/client");
 const jwt_1 = require("../utils/jwt");
 const mpm_1 = require("../utils/mpm");
 const scheduler_1 = require("../utils/scheduler");
+const buildTaskGraph_1 = require("../utils/buildTaskGraph");
 const prisma = new client_1.PrismaClient();
 const getProjectTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { projectId } = req.params;
@@ -46,6 +47,16 @@ const getProjectTasks = (req, res) => __awaiter(void 0, void 0, void 0, function
                             select: {
                                 username: true,
                                 profilePictureUrl: true
+                            }
+                        }
+                    }
+                },
+                dependencies: {
+                    include: {
+                        prerequisiteTask: {
+                            select: {
+                                id: true,
+                                title: true
                             }
                         }
                     }
@@ -170,7 +181,9 @@ const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 data: taskDependencies,
             });
         }
-        yield (0, mpm_1.calculateMPM)(parseInt(projectId)); // Recalculate MPM after creating the task
+        // build graph and recalculate MPM
+        const { adjList, nodes } = yield (0, buildTaskGraph_1.buildTaskGraph)(parseInt(projectId));
+        yield (0, mpm_1.calculateMPM)(adjList, nodes); // Recalculate MPM after creating the task
         res.status(201).json(newTask);
     }
     catch (error) {
@@ -196,7 +209,9 @@ const deleteTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const { projectId } = req.query;
     try {
         yield prisma.task.delete({ where: { id: Number(taskId) } });
-        yield (0, mpm_1.calculateMPM)(parseInt(String(projectId))); // Recalculate MPM after deleting the task
+        // Recalculate MPM after deleting the task
+        const { adjList, nodes } = yield (0, buildTaskGraph_1.buildTaskGraph)(parseInt(String(projectId)));
+        yield (0, mpm_1.calculateMPM)(adjList, nodes);
         res.status(204).send({ message: "Task deleted successfully" });
     }
     catch (error) {
@@ -276,3 +291,53 @@ const addCommentToTask = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.addCommentToTask = addCommentToTask;
+const addTaskDependency = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { taskId } = req.params;
+    const { source, target } = req.body;
+    try {
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+        const decoded = (0, jwt_1.verifyAccessToken)(token);
+        const userId = decoded === null || decoded === void 0 ? void 0 : decoded.userId;
+        if (!userId) {
+            res.status(401).json({ error: "Unauthorized" });
+        }
+        // check if user part of the project team
+        const task = yield prisma.task.findUnique({
+            where: { id: Number(taskId) },
+            include: { project: { include: { team: true } } },
+        });
+        if (!task) {
+            res.status(404).json({ error: "Task not found" });
+            return;
+        }
+        const teamMember = yield prisma.teamMember.findFirst({
+            where: {
+                userId: Number(userId),
+                teamId: task.project.teamId,
+            },
+        });
+        if (!teamMember) {
+            res.status(403).json({ error: "Forbidden: Only team members can add task dependencies" });
+            return;
+        }
+        // build graph ans Recalculate MPM after adding the dependency
+        const { adjList, nodes } = yield (0, buildTaskGraph_1.buildTaskGraph)(task.projectId);
+        nodes.get(Number(taskId)).dependencies.push(Number(source));
+        adjList.get(Number(source)).push(Number(target));
+        // Recalculate MPM after adding the dependency to check if new graph contains a cycle or not 
+        yield (0, mpm_1.calculateMPM)(adjList, nodes);
+        // add the dependency in the database if no cycle is detected
+        const dependency = yield prisma.taskDependency.create({
+            data: {
+                dependentTaskId: Number(target),
+                prerequisiteTaskId: Number(source),
+            },
+        });
+        res.status(201).json(dependency);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error adding task dependency", error: error.message });
+    }
+});
+exports.addTaskDependency = addTaskDependency;

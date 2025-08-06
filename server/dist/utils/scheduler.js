@@ -106,7 +106,7 @@ function pullPrerequisites(startTaskId) {
 // Master function: updates the moved task, then push/pull neighbors
 function rescheduleGraph(projectId, taskId, newStart, newDue) {
     return __awaiter(this, void 0, void 0, function* () {
-        // ⛳ Get the current task before updating
+        // Get the current task before updating
         const original = yield prisma.task.findUnique({
             where: { id: taskId },
             select: { startDate: true }

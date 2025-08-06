@@ -13,6 +13,16 @@ const features = [
     color: "bg-primary-100 text-primary-600"
   },
   {
+    title: "Real-Time Messaging",
+    description: "Collaborate with team members instantly using in-app real-time chat within each project workspace.",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+    color: "bg-green-100 text-green-600"
+  },
+  {
     title: "Automated Task Sequencing",
     description: "Kahn's algorithm automatically determines optimal task execution order and identifies circular dependencies.",
     icon: (
@@ -23,8 +33,18 @@ const features = [
     color: "bg-secondary-100 text-secondary-600"
   },
   {
+    title: "Gantt View & Rescheduling",
+    description: "View and adjust task timelines in a Gantt chart. Rescheduling one task auto-updates its dependents.",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M3 6h18M3 12h12M3 18h6" />
+      </svg>
+    ),
+    color: "bg-yellow-100 text-yellow-700"
+  },
+  {
     title: "Secure Team Collaboration",
-    description: "Role-based access control with JWT authentication. Invite team members and manage permissions.",
+    description: "Role-based access control with JWT authentication. Invite team members.",
     icon: (
       <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="7" r="4" />
@@ -34,6 +54,7 @@ const features = [
     color: "bg-gray-100 text-gray-700"
   }
 ];
+
 
 const FeaturesSection = () => {
   return (

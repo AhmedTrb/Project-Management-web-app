@@ -45,7 +45,7 @@ function HomePage() {
           </div>
         ) }
         {isErrorProjects && <div className="text-center font-normal text-lg text-secondary-950">
-            Error loading projects
+            Error loading projects: {isErrorProjects}
           </div>}
         {!projects || !isLoadingProjects && projects.length === 0  ? <div className="text-center font-normal text-lg text-secondary-950">No projects Found</div> :
           projects.map((project: Project) => (
